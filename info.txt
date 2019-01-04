@@ -1,0 +1,46 @@
+World Action Script
+
+=====DATA TYPES=====
+bool		true	false
+number		0	123.456
+string		"asd 134"
+var		string	number	function	var	bool
+function		pos(1 2 a)
+symbol		! (nil)
+
+=====VARIABLE=====
+
+varname		a variable
+varname =	set variable value
+example_var =	"string" 123.54 false var function() symbol
+global var		stored in tempoary user memory
+
+========IF=======
+
+if(a==b)
+..code..
+end
+
+if(1=="asd" or a~=b and 87.3>=c nor a<=3 not "aasd"==!)
+..code..
+end
+
+========REGISTRY=FUNCTIONS=======
+
+was.register_function("name"{
+	info="",			--function description
+	privs={},			--required privileges, eg (kick=true,server=true)
+	action=function(arg1,arg2...)	--function
+	end
+})
+was.register_function("name"{
+	packed=true,		--inputs all args as table + usedata
+	action=function(args,userdata)
+	end
+})
+
+========REGISTRY=SYMBOLS=======
+
+was.register_symbol("#",function(current_var,all_variables,userdata)
+	end
+})

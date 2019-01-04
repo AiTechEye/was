@@ -1,7 +1,12 @@
 was.register_function=function(name,t)
 	was.functions[name]=t.action
+	was.function_packed[name]=t.packed
 	was.info[name]=t.info
 	was.privs[name]=t.privs
+end
+
+was.register_symbol=function(symbol,f)
+	was.symbol[symbol]=f
 end
 
 was.chr=function(t)
@@ -131,7 +136,7 @@ was.compiler=function(input_text,user)
 			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
 --global var
 				data[ii+1].global=true
-			elseif data[ii+1] and data[ii].type=="symbol" and data[ii+1].type=="symbol" then
+			elseif data[ii+1] and data[ii].type=="symbol" and data[ii+1].type=="symbol" and data[ii].content~="}" and data[ii+1].content~="}" then
 --2 symbols to oparator
 				data[ii].content=data[ii].content .. data[ii+1].content
 				table.remove(data,ii+1)
@@ -176,12 +181,12 @@ was.compiler=function(input_text,user)
 	end
 	user=user or ":server:"
 	was.user[user]=was.user[user] or {}
-	was.user[user].global={}
+	was.user[user].global=was.user[user].global or {}
 
 	was.run(output_data2,user)
 end
 
-was.run_function=function(func_name,data,VAR,i,ii)
+was.run_function=function(func_name,data,VAR,i,ii,fulldata)
 	local d={}
 	local open=0
 	while i<=ii do
@@ -197,28 +202,28 @@ was.run_function=function(func_name,data,VAR,i,ii)
 
 		if data[i].type=="number" or data[i].type=="string" or data[i].type=="bool" or data[i].type=="symbol" then
 			table.insert(d,data[i].content)
-		elseif data[i].type=="var" and VAR[data[i].content] then
-			table.insert(d,VAR[data[i].content])
+		elseif data[i].type=="var" then
+			table.insert(d,VAR[data[i].content] or (func_name=="if" and "!")) 
 		elseif data[i].type=="function" and was.functions[data[i].content] then
-			local re,newi=was.run_function(data[i].content,data,VAR,i+1,#data)
+			local re,newi=was.run_function(data[i].content,data,VAR,i+1,#data) 
 			i=newi
 			if re then
-				table.insert(d,re)
+				table.insert(d,re or (func_name=="if" and "!"))
 			end
 		end
 		i=i+1
 	end
-	if func_name=="if" then
-		return was.functions[func_name](d),i
+
+	if was.function_packed[func_name] then
+		return was.functions[func_name](d,fulldata),i
 	else
-		return was.functions[func_name](unpack(d)),i
+		return was.functions[func_name](unpack(d)),i	
 	end
 end
 
 was.run=function(input,user)
 	local VAR=was.user[user].global
 	local state=0
-
 	for index,v in ipairs(input) do
 		local i=1
 		while i<=#v do
@@ -226,10 +231,12 @@ was.run=function(input,user)
 				local ndat=v[i+1]
 				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") and ndat.content then
 					VAR[v[i].content]=ndat.content
+				elseif ndat.type=="symbol" and was.symbol[ndat.content] then
+					VAR[v[i].content]=was.symbol[ndat.content](VAR[v[i].content],VAR,user)
 				elseif ndat.type=="var" and VAR[ndat.content] then
 					VAR[v[i].content]=VAR[ndat.content]
 				elseif ndat.type=="function" and was.functions[ndat.content] then
-					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v)	
+					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v,{var=VAR[v[i].content],variables=VAR,user=user})	
 				else
 					VAR[v[i].content]=nil
 				end

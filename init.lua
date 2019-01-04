@@ -1,28 +1,15 @@
 was={
 	functions={},
+	function_packed={},
 	info={},
 	privs={},
 	user={},
+	symbol={},
 	symbols="#@=?!&()[]{}%*+-/$<>|~^",
 }
 
 dofile(minetest.get_modpath("was") .. "/api.lua")
-dofile(minetest.get_modpath("was") .. "/functions.lua")
-
---world action script
---bool		true	false
---number		0	123.456
---string		"asd 134"
---var		string	number	function	var	bool
---function		pos(1 2 a)
-
---was.register_function("name"{
---	info="",
---	privs={},
---	action=function()
---	end
---})
-
+dofile(minetest.get_modpath("was") .. "/register.lua")
 
 minetest.register_chatcommand("was", {
 	description = "World action script gui",
@@ -89,3 +76,5 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		end
 	end
 end)
+
+--was.compiler("if(a==!) test(111)")
