@@ -11,7 +11,8 @@ was={
 		[">="]=function() end,
 		["<="]=function() end,
 	},
-	symbols_characters="#@=?!&()[]{}%*+-/$<>|~^",
+	symbols_characters="#@=?!&(){}%*+-/$<>|~^",
+	unallowed_characters="[]",
 }
 
 dofile(minetest.get_modpath("was") .. "/api.lua")
@@ -26,11 +27,46 @@ minetest.register_chatcommand("was", {
 	end,
 })
 
+was.gui_addnumbers=function(text)
+	text=text.."\n"
+	local t=""
+	for i,v in ipairs(text.split(text,"\n")) do
+		t=t ..i.." " ..v .."\n"
+	end
+	return t
+end
+
+was.gui_delnumbers=function(text)
+	local t=""
+	for i,v in ipairs(text.split(text,"\n")) do
+		local n,nn
+		for ii=1,v:len(),1 do
+			local s=string.sub(v,ii,ii)
+			if not n and was.num(s)==false then
+				n=true
+			end
+			if n and (nn or s~=" ") then
+				t=t..s
+				nn=true
+			elseif n and not nn then
+				nn=true
+			end
+		end
+		t=t.."\n"
+	end
+	return t
+end
+
 was.gui=function(name,msg)
-	was.user[name]=was.user[name] or {text="",funcs={}}
+	was.user[name]=was.user[name] or {text="",funcs={},inserttext="true",lines="off"}
 
 	local text=was.user[name].text or ""
 	local funcs=""
+
+	for f,v in pairs(was.symbols) do
+		funcs=funcs .. f ..","
+		table.insert(was.user[name].funcs,f)
+	end
 
 	for f,v in pairs(was.functions) do
 		if minetest.check_player_privs(name,was.privs[f]) then 
@@ -46,7 +82,8 @@ was.gui=function(name,msg)
 	.."label[0,0.6;".. minetest.colorize("#00FF00",(msg or "")) .."]"
 	.."button[0,-0.2;1.3,1;run;Run]"
 	.."button[1,-0.2;1.3,1;save;Save]"
-
+	.."button[2,-0.2;1.5,1;lines;Lines " ..was.user[name].lines.."]"
+	.."checkbox[16.6,-0.2;inserttext;Insert text;".. was.user[name].inserttext.."]"
 
 	minetest.after(0.1, function(gui,name)
 		return minetest.show_formspec(name, "was.gui",gui)
@@ -60,24 +97,61 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		if (pressed.quit and not pressed.key_enter) or not was.user[name] then
 			return
 		end
+
 		local funcs=was.user[name].funcs
 		was.user[name].funcs={}
 		was.user[name].text=pressed.text
+
+		if was.user[name].text:find("%[") or was.user[name].text:find("%]") then
+			was.user[name].text=was.user[name].text:gsub("%[","")
+			was.user[name].text=was.user[name].text:gsub("%]","")
+			minetest.close_formspec(name,form)
+			was.gui(name,"Unallowed characters removed")
+			return
+		end
+
+		if pressed.lines then
+			if was.user[name].lines=="on" then
+				was.user[name].text=was.gui_delnumbers(was.user[name].text)
+				was.user[name].lines="off"
+			else
+				was.user[name].text=was.gui_addnumbers(was.user[name].text)
+				was.user[name].lines="on"
+			end
+			was.gui(name)
+		elseif was.user[name].lines=="on" then
+			was.user[name].text=was.gui_delnumbers(was.user[name].text)
+			was.user[name].lines="off"
+		end
+
+
+		if pressed.inserttext then
+			was.user[name].inserttext=pressed.inserttext
+		end
 
 		if pressed.list and pressed.list~="IMV" then
 			local n=pressed.list:gsub("CHG:","")
 			local f=funcs[tonumber(n)]
 			local info=was.info[f] or ""
-
 			if was.privs[f] then
 				info=info .. "| Privs: " ..minetest.privs_to_string(was.privs[f])
 			end
+
+			if was.user[name].inserttext=="true" and f then
+				was.user[name].text=was.user[name].text .. f ..(was.functions[f] and "()" or "") 
+			end
+
 			minetest.close_formspec(name,form)
 			was.gui(name,info)
-
 		elseif pressed.save then
 		elseif pressed.run then
 			local msg=was.compiler(pressed.text,name)
+
+			if msg then
+				was.user[name].text=was.gui_addnumbers(was.user[name].text)
+				was.user[name].lines="on"
+			end
+
 			was.gui(name,msg)
 		end
 	end

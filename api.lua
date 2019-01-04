@@ -5,8 +5,9 @@ was.register_function=function(name,t)
 	was.privs[name]=t.privs
 end
 
-was.register_symbol=function(symbol,f)
+was.register_symbol=function(symbol,f,info)
 	was.symbols[symbol]=f
+	was.info[symbol]=info
 end
 
 was.chr=function(t)
@@ -40,9 +41,12 @@ was.compiler=function(input_text,user)
 	input_text=input_text .."\n"
 	input_text=input_text:gsub("%(","{")
 	input_text=input_text:gsub("%)","}")
+	input_text=input_text:gsub("%[","")
+	input_text=input_text:gsub("%]","")
 
 	for i=1,was.symbols_characters:len(),1 do
-		input_text=input_text:gsub("%" ..was.symbols_characters:sub(i,i)," " .. was.symbols_characters:sub(i,i) .." ")
+		local c=was.symbols_characters:sub(i,i)
+		input_text=input_text:gsub("%" ..c," " .. c .." ")
 	end
 
 	local c
