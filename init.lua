@@ -48,6 +48,9 @@ minetest.register_node("was:computer", {
 		local meta=minetest.get_meta(pos)
 		local name=player:get_player_name() or ""
 		if meta:get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
+			if meta:get_string("owner")=="" then
+				return
+			end
 			local text=minetest.deserialize(meta:get_string("text"))
 			was.gui(name,"",{text=text})
 			if was.user[name] and not was.user[name].nodepos then
@@ -96,16 +99,14 @@ end
 
 was.gui=function(name,msg,other)
 
-	local text=(other and other.text or "")
+	was.user[name]=was.user[name] or {text=(other and other.text or ""),funcs={},inserttext="true",lines="off"}
 
-	was.user[name]=was.user[name] or {text=text,funcs={},inserttext="true",lines="off"}
-
-	text=was.user[name].text
+	local text=was.user[name].text
 	local funcs=""
+	local symbs="TOKENS,"
 
 	for f,v in pairs(was.symbols) do
-		funcs=funcs .. f ..","
-		table.insert(was.user[name].funcs,f)
+		symbs=symbs .. f ..","
 	end
 
 	for f,v in pairs(was.functions) do
@@ -114,16 +115,19 @@ was.gui=function(name,msg,other)
 			table.insert(was.user[name].funcs,f)
 		end
 	end
+
 	funcs=funcs:sub(0,funcs:len()-1)
+	symbs=symbs:sub(0,symbs:len()-1)
 
 	local gui="size[20,12]"
 	.."textarea[0,1.3;17,13;text;;" .. text .. "]"
-	.."textlist[16.6,1;3,12;list;" .. funcs .."]"
 	.."label[0,0.6;".. minetest.colorize("#00FF00",(msg or "")) .."]"
 	.."button[0,-0.2;1.3,1;run;Run]"
 	.."button[1,-0.2;1.3,1;save;Save]"
 	.."button[2,-0.2;1.5,1;lines;Lines " ..was.user[name].lines.."]"
-	.."checkbox[16.6,-0.2;inserttext;Insert text;".. was.user[name].inserttext.."]"
+	.."dropdown[16.6,0.4;3,12;slist;" .. symbs ..";]"
+	.."textlist[16.6,1;3,12;list;" .. funcs .."]"
+	.."checkbox[16.6,-0.4;inserttext;Insert text;".. was.user[name].inserttext.."]"
 
 	minetest.after(0.1, function(gui,name)
 		return minetest.show_formspec(name, "was.gui",gui)
@@ -167,7 +171,6 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			was.user[name].lines="off"
 		end
 
-
 		if pressed.inserttext then
 			was.user[name].inserttext=pressed.inserttext
 		end
@@ -179,13 +182,16 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			if was.privs[f] then
 				info=info .. "| Privs: " ..minetest.privs_to_string(was.privs[f])
 			end
-
 			if was.user[name].inserttext=="true" and f then
 				was.user[name].text=was.user[name].text .. f ..(was.functions[f] and "()" or "") 
 			end
-
 			minetest.close_formspec(name,form)
 			was.gui(name,info)
+		elseif pressed.slist and pressed.slist~="TOKENS" then
+			if was.user[name].inserttext=="true" then
+				was.user[name].text=was.user[name].text .. pressed.slist
+			end
+			was.gui(name,was.info[pressed.slist] or "")
 		elseif pressed.save then
 			if was.user[name].nodepos and minetest.get_item_group(minetest.get_node(was.user[name].nodepos).name,"was_component")==1 then
 				local meta=minetest.get_meta(was.user[name].nodepos)

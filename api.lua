@@ -116,11 +116,11 @@ was.compiler=function(input_text,user)
 	local output_data2={}
 	local func
 --print(dump(output_data))
+
 	for i,v in ipairs(output_data) do
 		local ii=1
 		data=v
 		while ii<=#v do
-
 			if data[ii].type=="number" then
 --number
 				data[ii].content=tonumber(data[ii].content)
@@ -136,7 +136,9 @@ was.compiler=function(input_text,user)
 			elseif data[ii].content=="end" and ii==1 then
 --end
 				data[ii].type="end state"
-
+			elseif data[ii].content=="else" and ii==1 then
+--else
+				data[ii].type="else state"
 			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
 --global var
 				data[ii+1].global=true
@@ -144,7 +146,7 @@ was.compiler=function(input_text,user)
 --2 symbols to oparator
 				data[ii].content=data[ii].content .. data[ii+1].content
 				table.remove(data,ii+1)
-			elseif data[ii+1] and data[ii].type=="var" and data[ii+1].content=="=" and not (data[ii+2] and data[ii+2].content=="}") then
+			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="=" and not was.symbols[data[ii+1].content ..  data[ii+2].content] then
 --var =
 				if func then
 					return 'ERROR line '.. i ..': set variable "' ..data[ii].content .. '" inside function'
@@ -234,13 +236,14 @@ end
 was.run=function(input,user)
 	local VAR=was.user[user].global
 	local state=0
+	local elsestate=0
 	was.username=user
 --print(dump(input))
 
 	for index,v in ipairs(input) do
 		local i=1
 		while i<=#v do
-			if state==0 and v[i].type=="set var" and v[i+1] then
+			if (state==0 or elsestate==1) and v[i].type=="set var" and v[i+1] then
 				local ndat=v[i+1]
 				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") and ndat.content then
 					VAR[v[i].content]=ndat.content
@@ -261,7 +264,7 @@ was.run=function(input,user)
 				i=i+1
 			elseif v[i].type=="function" and was.functions[v[i].content] then
 				local a
-				if state==0  then
+				if (state==0 or elsestate==1)  then
 					a=was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})
 	
 				end
@@ -269,10 +272,17 @@ was.run=function(input,user)
 					state=state+1
 				end
 				i=i+1
-			elseif v[i].type=="symbol" and was.symbols[v[i].content] then
+			elseif (state==0 or elsestate==1) and v[i].type=="symbol" and was.symbols[v[i].content] then
 					was.symbols[v[i].content](VAR[v[i].content],VAR,user)
+			elseif state==1 and v[i].type=="else state" then
+				elsestate=1
+			elseif state==0 and v[i].type=="else state" then
+				state=1
 			elseif state>0 and v[i].type=="end state" then
 				state=state-1
+				if state<=0 then
+					elsestate=0
+				end
 			end
 			i=i+1
 		end
