@@ -30,10 +30,37 @@ dofile(minetest.get_modpath("was") .. "/register.lua")
 
 minetest.register_chatcommand("was", {
 	description = "World action script gui",
-	privs = {kick = true},
 	func = function(name, param)
 		was.gui(name)
 		return true
+	end,
+})
+
+minetest.register_node("was:computer", {
+	description = "Computer",
+	tiles = {"default_steel_block.png"},
+	groups = {oddly_breakable_by_hand = 3,was_component=1},
+	after_place_node = function(pos, placer)
+		local meta = minetest.get_meta(pos)
+		meta:set_string("owner",placer:get_player_name() or "")
+	end,
+	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		local meta=minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
+			local text=minetest.deserialize(meta:get_string("text"))
+			was.gui(name,"",{text=text})
+			if was.user[name] and not was.user[name].nodepos then
+				was.user[name].nodepos=pos
+			end
+		end
+	end,
+	can_dig = function(pos, player)
+		local meta=minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
+			return true
+		end
 	end,
 })
 
@@ -67,10 +94,13 @@ was.gui_delnumbers=function(text)
 	return t
 end
 
-was.gui=function(name,msg)
-	was.user[name]=was.user[name] or {text="",funcs={},inserttext="true",lines="off"}
+was.gui=function(name,msg,other)
 
-	local text=was.user[name].text or ""
+	local text=(other and other.text or "")
+
+	was.user[name]=was.user[name] or {text=text,funcs={},inserttext="true",lines="off"}
+
+	text=was.user[name].text
 	local funcs=""
 
 	for f,v in pairs(was.symbols) do
@@ -105,6 +135,9 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 	if form=="was.gui" then
 		local name=user:get_player_name()
 		if (pressed.quit and not pressed.key_enter) or not was.user[name] then
+			if was.user[name] then
+				was.user[name].nodepos=nil
+			end
 			return
 		end
 
@@ -154,6 +187,11 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			minetest.close_formspec(name,form)
 			was.gui(name,info)
 		elseif pressed.save then
+			if was.user[name].nodepos and minetest.get_item_group(minetest.get_node(was.user[name].nodepos).name,"was_component")==1 then
+				local meta=minetest.get_meta(was.user[name].nodepos)
+				meta:set_string("text",minetest.serialize(was.user[name].text))
+				was.gui(name,"Text saved successful")
+			end
 		elseif pressed.run then
 			local msg=was.compiler(pressed.text,name)
 
