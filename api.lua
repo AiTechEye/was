@@ -231,7 +231,7 @@ end
 was.run=function(input,user)
 	local VAR=was.user[user].global
 	local state=0
-
+	was.username=user
 --print(dump(input))
 
 	for index,v in ipairs(input) do
@@ -246,7 +246,7 @@ was.run=function(input,user)
 				elseif ndat.type=="var" and VAR[ndat.content] then
 					VAR[v[i].content]=VAR[ndat.content]
 				elseif ndat.type=="function" and was.functions[ndat.content] then
-					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v,{var=VAR[v[i].content],variables=VAR,user=user})	
+					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v,{var=VAR[v[i].content],variables=VAR,user=user})
 				else
 					VAR[v[i].content]=nil
 				end
@@ -260,6 +260,7 @@ was.run=function(input,user)
 				local a
 				if state==0  then
 					a=was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})
+	
 				end
 				if v[i].content=="if" and a~=true then
 					state=state+1
@@ -273,5 +274,6 @@ was.run=function(input,user)
 			i=i+1
 		end
 	end
+	was.username=""
 	--print(dump(VAR))
 end

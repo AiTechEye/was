@@ -4,6 +4,7 @@ was={
 	info={},
 	privs={},
 	user={},
+	username="",
 	symbols={
 		["!"]=function() end,
 		["=="]=function() end,

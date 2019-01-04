@@ -1,9 +1,18 @@
+
+--[[
+================= SYMBOLS =================
+--]]
+
 was.register_symbol("?",
 	function(data,variables,user)
 		return user
 	end,
 	"return username"
 )
+
+--[[
+================= SERVER =================
+--]]
 
 was.register_function("print",{
 	privs={server=true},
@@ -21,8 +30,12 @@ was.register_function("dump",{
 	end
 })
 
+--[[
+================= DATATYPES = VARIABLES =================
+--]]
+
 was.register_function("pos",{
-	info="to pos (n1 n2 n3)",
+	info="numbers to pos (n1 n2 n3)",
 	action=function(n1,n2,n3)
 		if type(n1)=="number" and type(n2)=="number" and type(n3)=="number" then
 			return {x=n1,y=n2,z=n3}
@@ -30,18 +43,51 @@ was.register_function("pos",{
 	end
 })
 
+
+--[[
+================= NODES =================
+--]]
+
 was.register_function("node.set",{
-	info="(pos,nodename)",
+	info="set node (pos,nodename)",
 	privs={give=true,ban=true},
 	action=function(pos,name)
-		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] then
+		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.username) then
 			minetest.set_node(pos,{name=name})
 		end
 	end
 })
 
+was.register_function("node.add",{
+	info="add node (pos,nodename)",
+	privs={give=true,kick=true},
+	action=function(pos,name)
+		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.username) then
+			minetest.add_node(pos,{name=name})
+		end
+	end
+})
+
+was.register_function("node.get_name",{
+	info="get node name (pos)",
+	action=function(pos)
+		return (was.is_pos(pos) and minetest.get_node(pos).name or nil)
+	end
+})
+
+was.register_function("node.exist",{
+	info="node exist (name)",
+	action=function(name)
+		return ((was.is_string(name) or nil) and minetest.registered_nodes[name]~=nil)
+	end
+})
+
+--[[
+================= PLAYER =================
+--]]
+
 was.register_function("player.get_pos",{
-	info="(playername)",
+	info="get player name (playername)",
 	action=function(name)
 		if type(name)~="string" then
 			return
@@ -52,6 +98,10 @@ was.register_function("player.get_pos",{
 		end
 	end
 })
+
+--[[
+================= MISC =================
+--]]
 
 was.register_function("if",{
 	packed=true,
