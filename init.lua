@@ -4,8 +4,8 @@ was={
 	info={},
 	privs={},
 	user={},
-	symbol={},
-	symbols="#@=?!&()[]{}%*+-/$<>|~^",
+	symbols={},
+	symbols_characters="#@=?!&()[]{}%*+-/$<>|~^",
 }
 
 dofile(minetest.get_modpath("was") .. "/api.lua")

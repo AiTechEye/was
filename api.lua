@@ -6,7 +6,7 @@ was.register_function=function(name,t)
 end
 
 was.register_symbol=function(symbol,f)
-	was.symbol[symbol]=f
+	was.symbols[symbol]=f
 end
 
 was.chr=function(t)
@@ -20,7 +20,7 @@ was.num=function(t)
 end
 
 was.symbol=function(t)
-	return was.symbols:find(t)
+	return was.symbols_characters:find(t)
 end
 
 was.is_number=function(n)
@@ -41,8 +41,8 @@ was.compiler=function(input_text,user)
 	input_text=input_text:gsub("%(","{")
 	input_text=input_text:gsub("%)","}")
 
-	for i=1,was.symbols:len(),1 do
-		input_text=input_text:gsub("%" ..was.symbols:sub(i,i)," " .. was.symbols:sub(i,i) .." ")
+	for i=1,was.symbols_characters:len(),1 do
+		input_text=input_text:gsub("%" ..was.symbols_characters:sub(i,i)," " .. was.symbols_characters:sub(i,i) .." ")
 	end
 
 	local c
@@ -231,8 +231,8 @@ was.run=function(input,user)
 				local ndat=v[i+1]
 				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") and ndat.content then
 					VAR[v[i].content]=ndat.content
-				elseif ndat.type=="symbol" and was.symbol[ndat.content] then
-					VAR[v[i].content]=was.symbol[ndat.content](VAR[v[i].content],VAR,user)
+				elseif ndat.type=="symbol" and was.symbols[ndat.content] then
+					VAR[v[i].content]=was.symbols[ndat.content](VAR[v[i].content],VAR,user)
 				elseif ndat.type=="var" and VAR[ndat.content] then
 					VAR[v[i].content]=VAR[ndat.content]
 				elseif ndat.type=="function" and was.functions[ndat.content] then

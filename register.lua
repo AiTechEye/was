@@ -1,13 +1,12 @@
 was.register_symbol("!",function(current_var,all_var,username)	--dont change this
 	end
-})
+)
 
 
 was.register_function("print",{
 	privs={server=true},
 	packed=true,
 	action=function(a)
-		
 		print(unpack(a))
 	end
 })
