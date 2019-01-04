@@ -4,7 +4,13 @@ was={
 	info={},
 	privs={},
 	user={},
-	symbols={},
+	symbols={
+		["!"]=function() end,
+		["=="]=function() end,
+		["~="]=function() end,
+		[">="]=function() end,
+		["<="]=function() end,
+	},
 	symbols_characters="#@=?!&()[]{}%*+-/$<>|~^",
 }
 

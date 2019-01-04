@@ -6,7 +6,7 @@ number		0	123.456
 string		"asd 134"
 var		string	number	function	var	bool
 function		pos(1 2 a)
-symbol		! (nil)
+symbol		! (nil) ? (username)
 
 =====VARIABLE=====
 

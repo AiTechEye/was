@@ -1,7 +1,6 @@
-was.register_symbol("!",function(current_var,all_var,username)	--dont change this
-	end
-)
-
+was.register_symbol("?",function(data,variables,user)
+	return user
+end)
 
 was.register_function("print",{
 	privs={server=true},
