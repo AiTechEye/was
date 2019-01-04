@@ -208,7 +208,10 @@ was.run_function=function(func_name,data,VAR,i,ii,userdata)
 			table.insert(d,data[i].content)
 
 		elseif data[i].type=="symbol" and was.symbols[data[i].content] then
-			table.insert(d,was.symbols[data[i].content](userdata.var,userdata.variables,userdata.user))
+			local a=was.symbols[data[i].content](userdata.var,userdata.variables,userdata.user)
+			if a then
+				table.insert(d, a)
+			end
 		elseif data[i].type=="var" then
 			table.insert(d,VAR[data[i].content] or func_name=="if" and "!") 
 		elseif data[i].type=="function" and was.functions[data[i].content] then

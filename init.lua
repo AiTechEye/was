@@ -1,19 +1,28 @@
 was={
 	functions={},
 	function_packed={},
-	info={},
+	info={
+		["!"]="Empty value",
+		["=="]="Equal (only used with if)",
+		["~="]="Equal (only used with if)",
+		[">"]="Greater then (only used with if)",
+		["<"]="Less then (only used with if)",
+		[">="]="Greater or equal (only used with if)",
+		["<="]="Less or equal (only used with if)",
+	},
 	privs={},
 	user={},
 	username="",
 	symbols={
-		["!"]=function() end,
-		["=="]=function() end,
-		["~="]=function() end,
-		[">="]=function() end,
-		["<="]=function() end,
+		["!"]=function() return end,
+		[">"]=function() return ">" end,
+		["<"]=function() return "<" end,
+		["=="]=function() return "==" end,
+		["~="]=function() return "~=" end,
+		[">="]=function() return ">=" end,
+		["<="]=function() return "<=" end,
 	},
-	symbols_characters="#@=?!&(){}%*+-/$<>|~^",
-	unallowed_characters="[]",
+	symbols_characters="#@=?!&{}%*+-/$<>|~^",
 }
 
 dofile(minetest.get_modpath("was") .. "/api.lua")
