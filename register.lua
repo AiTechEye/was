@@ -103,6 +103,20 @@ was.register_function("player.get_pos",{
 ================= MISC =================
 --]]
 
+was.register_function("elseif",{
+	packed=true,
+	info="Used with if",
+	action=function(arg)
+		return was.functions["if"](arg)
+	end
+})
+was.register_function("else",{
+	packed=true,
+	info="Used with if",
+	action=function(arg)
+	end
+})
+
 was.register_function("if",{
 	packed=true,
 	info="able oparators: and or not nor == ~= < > => =<",

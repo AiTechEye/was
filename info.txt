@@ -18,14 +18,18 @@ global var		stored in tempoary user memory
 ========IF=======
 
 if(a==b)
-..code..
-end
+	..code..
+endif
 
 if(1=="asd" or a~=b and 87.3>=c nor a<=3 not "aasd"==!)
-..code..
+	..code..
+elseif(b==!)
+	..code..
+elseif(b~=a not c<b)
+	..code..
 else
-..code..
-end
+	..code..
+endif
 
 ========REGISTRY=FUNCTIONS=======
 

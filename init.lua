@@ -73,6 +73,12 @@ minetest.register_node("was:computer", {
 
 was.gui_addnumbers=function(text)
 	text=text.."\n"
+	for i=1,text:len(),1 do
+		if text:sub(i,i)~="\n" then
+			text=text:sub(i,text:len())
+			break
+		end
+	end
 	local t=""
 	for i,v in ipairs(text.split(text,"\n")) do
 		t=t ..i.." " ..v .."\n"
@@ -80,23 +86,24 @@ was.gui_addnumbers=function(text)
 	return t
 end
 
+
 was.gui_delnumbers=function(text)
+	for i=1,text:len(),1 do
+		if text:sub(i,i)~="\n" then
+			text=text:sub(i,text:len())
+			break
+		end
+	end
 	local t=""
 	for i,v in ipairs(text.split(text,"\n")) do
-		local n,nn
 		for ii=1,v:len(),1 do
 			local s=string.sub(v,ii,ii)
-			if not n and was.num(s)==false then
-				n=true
-			end
-			if n and (nn or s~=" ") then
-				t=t..s
-				nn=true
-			elseif n and not nn then
-				nn=true
+			if not was.num(s) then
+				ii= (s==" " and ii+1) or ii
+				t=t .. string.sub(v,ii,v:len()).."\n"
+				break
 			end
 		end
-		t=t.."\n"
 	end
 	return t
 end

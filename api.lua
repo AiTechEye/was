@@ -116,7 +116,7 @@ was.compiler=function(input_text,user)
 	local output_data2={}
 	local func
 --print(dump(output_data))
-
+	local ifends=0
 	for i,v in ipairs(output_data) do
 		local ii=1
 		data=v
@@ -133,12 +133,13 @@ was.compiler=function(input_text,user)
 				data[ii].type="bool"
 				data[ii].content=data[ii].content=="true"
 
-			elseif data[ii].content=="end" and ii==1 then
---end
-				data[ii].type="end state"
-			elseif data[ii].content=="else" and ii==1 then
---else
-				data[ii].type="else state"
+			elseif data[ii].content=="elseif" or data[ii].content=="else" or (ifends>0 and data[ii].content=="end") then
+--elseif, else end
+				data[ii].type="ifstate"
+				data[ii].ifstate=true
+				if data[ii].content=="end" then
+					ifends=ifends-1
+				end
 			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
 --global var
 				data[ii+1].global=true
@@ -159,7 +160,11 @@ was.compiler=function(input_text,user)
 					return 'ERROR line '.. i ..': void function "' .. data[ii].content ..'"'
 				end
 				func=true
-				data[ii].type="function"	
+				data[ii].type="function"
+				if data[ii].content=="if" then
+					data[ii].ifstate=true
+					ifends=ifends+1
+				end
 				table.remove(data,ii+1)
 			elseif data[ii].content=="}" then
 --)				
@@ -185,6 +190,11 @@ was.compiler=function(input_text,user)
 		end
 		end
 	end
+
+	if ifends>0 then
+		return 'ERROR: Missing ' .. ifends .. ' if "end"'
+	end
+
 	user=user or ":server:"
 	was.user[user]=was.user[user] or {}
 	was.user[user].global=was.user[user].global or {}
@@ -239,11 +249,40 @@ was.run=function(input,user)
 	local elsestate=0
 	was.username=user
 --print(dump(input))
-
 	for index,v in ipairs(input) do
 		local i=1
 		while i<=#v do
-			if (state==0 or elsestate==1) and v[i].type=="set var" and v[i+1] then
+			if v[i].ifstate then
+				if v[i].content=="if" then
+					if state==0 and was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})==true then
+						state=0
+					else
+						state=state+1
+					end
+				end
+				if v[i].content=="elseif" then
+					if state==0 then
+						state=1
+						elsestate=1
+					elseif state==1 and elsestate==0 and was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})==true then
+						state=0
+					end
+				elseif v[i].content=="else" then
+					if state==0 then
+						state=1
+					elseif state==1 and elsestate==0 then
+						state=0
+					end
+				elseif v[i].content=="end" then
+					state=state-1
+					if state<=0 then
+						state=0
+						elsestate=0
+					end
+				end
+			elseif state>0 then
+
+			elseif v[i].type=="set var" and v[i+1] then
 				local ndat=v[i+1]
 				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") and ndat.content then
 					VAR[v[i].content]=ndat.content
@@ -262,27 +301,11 @@ was.run=function(input,user)
 				end
 
 				i=i+1
-			elseif v[i].type=="function" and was.functions[v[i].content] then
-				local a
-				if (state==0 or elsestate==1)  then
-					a=was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})
-	
-				end
-				if v[i].content=="if" and a~=true then
-					state=state+1
-				end
+			elseif v[i].type=="function" then
+				was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})
 				i=i+1
-			elseif (state==0 or elsestate==1) and v[i].type=="symbol" and was.symbols[v[i].content] then
-					was.symbols[v[i].content](VAR[v[i].content],VAR,user)
-			elseif state==1 and v[i].type=="else state" then
-				elsestate=1
-			elseif state==0 and v[i].type=="else state" then
-				state=1
-			elseif state>0 and v[i].type=="end state" then
-				state=state-1
-				if state<=0 then
-					elsestate=0
-				end
+			elseif v[i].type=="symbol" and was.symbols[v[i].content] then
+				was.symbols[v[i].content](VAR[v[i].content],VAR,user)
 			end
 			i=i+1
 		end
