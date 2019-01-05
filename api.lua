@@ -34,6 +34,23 @@ was.is_pos=function(pos)
 	return type(pos)=="table" and type(pos.x)=="number" and type(pos.y)=="number" and type(pos.z)=="number"
 end
 
+was.data_to_table=function(VAR,a)
+	local b={}
+	local ii=0
+	for i,v in ipairs(a) do
+		if v.type~="set var" and v.type~="function" and v.type~="bracket end" then
+			local vv=v.content
+			ii=ii+1
+			if v.type=="var" then
+				vv=VAR[v.content]
+			end
+			b[ii]=vv
+		end
+	end
+	return b
+end
+
+
 was.compiler=function(input_text,user)
 	if type(input_text)~="string" or input_text:len()<2 then
 		return
@@ -202,7 +219,7 @@ was.compiler=function(input_text,user)
 	was.run(output_data2,user)
 end
 
-was.run_function=function(func_name,data,VAR,i,ii,userdata)
+was.run_function=function(func_name,data,VAR,i,ii)
 	local d={}
 	local open=0
 	while i<=ii do
@@ -218,15 +235,14 @@ was.run_function=function(func_name,data,VAR,i,ii,userdata)
 
 		if data[i].type=="number" or data[i].type=="string" or data[i].type=="bool" then
 			table.insert(d,data[i].content)
-
 		elseif data[i].type=="symbol" and was.symbols[data[i].content] then
-			local a=was.symbols[data[i].content](userdata.var,userdata.variables,userdata.user,func_name)
+			local a=was.symbols[data[i].content]()
 			if a then
 				table.insert(d, a)
 			end
 		elseif data[i].type=="var" then
 			table.insert(d,VAR[data[i].content] or func_name=="if" and "!") 
-		elseif data[i].type=="function" and was.functions[data[i].content] then
+		elseif data[i].type=="function" then
 			local re,newi=was.run_function(data[i].content,data,VAR,i+1,#data) 
 			i=newi
 			if re then
@@ -237,7 +253,7 @@ was.run_function=function(func_name,data,VAR,i,ii,userdata)
 	end
 
 	if was.function_packed[func_name] then
-		return was.functions[func_name](d,userdata),i
+		return was.functions[func_name](d),i
 	else
 		return was.functions[func_name](unpack(d)),i	
 	end
@@ -247,14 +263,28 @@ was.run=function(input,user)
 	local VAR=was.user[user].global
 	local state=0
 	local elsestate=0
-	was.username=user
+
+	was.userdata={
+		name=user,
+		function_name="",
+		index=0,
+		data={},
+	}
+
+
 --print(dump(input))
 	for index,v in ipairs(input) do
 		local i=1
 		while i<=#v do
+
+			was.userdata.data=v
+			was.userdata.index=i
+			was.userdata.function_name=""
+
 			if v[i].ifstate then
+				was.userdata.function_name=v[i].content
 				if v[i].content=="if" then
-					if state==0 and was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})==true then
+					if state==0 and was.run_function(v[i].content,v,VAR,i+1,#v)==true then
 						state=0
 					else
 						state=state+1
@@ -264,7 +294,7 @@ was.run=function(input,user)
 					if state==0 then
 						state=1
 						elsestate=1
-					elseif state==1 and elsestate==0 and was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})==true then
+					elseif state==1 and elsestate==0 and was.run_function(v[i].content,v,VAR,i+1,#v)==true then
 						state=0
 					end
 				elseif v[i].content=="else" then
@@ -284,14 +314,15 @@ was.run=function(input,user)
 
 			elseif v[i].type=="set var" and v[i+1] then
 				local ndat=v[i+1]
-				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") and ndat.content then
+				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") then
 					VAR[v[i].content]=ndat.content
 				elseif ndat.type=="symbol" and was.symbols[ndat.content] then
-					VAR[v[i].content]=was.symbols[ndat.content](VAR[v[i].content],VAR,user)
+					VAR[v[i].content]=was.symbols[ndat.content]()
 				elseif ndat.type=="var" and VAR[ndat.content] then
 					VAR[v[i].content]=VAR[ndat.content]
 				elseif ndat.type=="function" and was.functions[ndat.content] then
-					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v,{var=VAR[v[i].content],variables=VAR,user=user})
+					was.userdata.function_name=ndat.content
+					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v)
 				else
 					VAR[v[i].content]=nil
 				end
@@ -302,14 +333,16 @@ was.run=function(input,user)
 
 				i=i+1
 			elseif v[i].type=="function" then
-				was.run_function(v[i].content,v,VAR,i+1,#v,{var=VAR[v[i].content],variables=VAR,user=user})
+				was.userdata.function_name=v[i].content
+				was.run_function(v[i].content,v,VAR,i+1,#v)
 				i=i+1
 			elseif v[i].type=="symbol" and was.symbols[v[i].content] then
-				was.symbols[v[i].content](VAR[v[i].content],VAR,user)
+				was.symbols[v[i].content]()
 			end
+
 			i=i+1
 		end
 	end
-	was.username=""
+	was.userdata={}
 	--print(dump(VAR))
 end

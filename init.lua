@@ -13,9 +13,10 @@ was={
 	privs={},
 	user={},
 	username="",
+	userdata={},
 	symbols={
-		["!"]=function(var,vars,user,run_func_name)
-			if run_func_name and run_func_name=="if" then
+		["!"]=function()
+			if was.userdata.function_name=="if" then
 				return "!"
 			end
 		end,
@@ -222,4 +223,4 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 	end
 end)
 
---was.compiler("if(a==!) test(111)")
+--was.compiler("a=1+2")

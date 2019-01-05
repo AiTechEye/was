@@ -4,8 +4,8 @@
 --]]
 
 was.register_symbol("?",
-	function(data,variables,user)
-		return user
+	function()
+		return was.userdata.name
 	end,
 	"return username"
 )
@@ -52,7 +52,7 @@ was.register_function("node.set",{
 	info="set node (pos,nodename)",
 	privs={give=true,ban=true},
 	action=function(pos,name)
-		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.username) then
+		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
 			minetest.set_node(pos,{name=name})
 		end
 	end
@@ -62,7 +62,7 @@ was.register_function("node.add",{
 	info="add node (pos,nodename)",
 	privs={give=true,kick=true},
 	action=function(pos,name)
-		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.username) then
+		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
 			minetest.add_node(pos,{name=name})
 		end
 	end
