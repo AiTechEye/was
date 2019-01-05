@@ -210,7 +210,7 @@ was.run_function=function(func_name,data,VAR,i,ii,userdata)
 			table.insert(d,data[i].content)
 
 		elseif data[i].type=="symbol" and was.symbols[data[i].content] then
-			local a=was.symbols[data[i].content](userdata.var,userdata.variables,userdata.user)
+			local a=was.symbols[data[i].content](userdata.var,userdata.variables,userdata.user,func_name)
 			if a then
 				table.insert(d, a)
 			end

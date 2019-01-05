@@ -118,8 +118,11 @@ was.register_function("if",{
 		while i<#arg do
 		local a=arg[i]
 
-		if a=="!" then
-			arg[i]=nil
+		if arg[i-1]=="!" then
+			arg[i-1]=nil
+		end
+		if arg[i+1]=="!" then
+			arg[i+1]=nil
 		end
 
 		if a=="==" then

@@ -14,7 +14,11 @@ was={
 	user={},
 	username="",
 	symbols={
-		["!"]=function() return end,
+		["!"]=function(var,vars,user,run_func_name)
+			if run_func_name and run_func_name=="if" then
+				return "!"
+			end
+		end,
 		[">"]=function() return ">" end,
 		["<"]=function() return "<" end,
 		["=="]=function() return "==" end,
@@ -103,7 +107,7 @@ was.gui=function(name,msg,other)
 
 	local text=was.user[name].text
 	local funcs=""
-	local symbs="TOKENS,"
+	local symbs="SYMBOLS,"
 
 	for f,v in pairs(was.symbols) do
 		symbs=symbs .. f ..","
@@ -187,7 +191,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			end
 			minetest.close_formspec(name,form)
 			was.gui(name,info)
-		elseif pressed.slist and pressed.slist~="TOKENS" then
+		elseif pressed.slist and pressed.slist~="SYMBOLS" then
 			if was.user[name].inserttext=="true" then
 				was.user[name].text=was.user[name].text .. pressed.slist
 			end

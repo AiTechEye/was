@@ -23,6 +23,8 @@ end
 
 if(1=="asd" or a~=b and 87.3>=c nor a<=3 not "aasd"==!)
 ..code..
+else
+..code..
 end
 
 ========REGISTRY=FUNCTIONS=======
@@ -41,6 +43,6 @@ was.register_function("name"{
 
 ========REGISTRY=SYMBOLS=======
 
-was.register_symbol("#",function(current_var,all_variables,userdata)
+was.register_symbol("#",function(current_var,all_variables,username,run_func_name),"info"
 	end
 })
