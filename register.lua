@@ -1,4 +1,27 @@
 
+was.register_symbol("+",
+	function()
+		local i=was.userdata.index
+		local a=was.iuserdata(i-1)
+		local b=was.iuserdata(i+1)
+
+
+
+		if was.is_number(a) and was.is_number(b) then
+--print("+",a,b,a+b)
+			return a+b
+		end
+--was.ilastuserdata()
+
+	end,
+	"return username"
+)
+
+
+
+
+
+
 --[[
 ================= SYMBOLS =================
 --]]

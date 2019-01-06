@@ -34,22 +34,28 @@ was.is_pos=function(pos)
 	return type(pos)=="table" and type(pos.x)=="number" and type(pos.y)=="number" and type(pos.z)=="number"
 end
 
-was.data_to_table=function(VAR,a)
-	local b={}
-	local ii=0
-	for i,v in ipairs(a) do
-		if v.type~="set var" and v.type~="function" and v.type~="bracket end" then
-			local vv=v.content
-			ii=ii+1
-			if v.type=="var" then
-				vv=VAR[v.content]
-			end
-			b[ii]=vv
+was.ilastuserdata=function()
+	for i=was.userdata.index,#was.userdata.data,1 do
+		if not was.userdata.data[i+1] or was.userdata.data[i].type=="bracket end" then
+			return i
 		end
 	end
-	return b
+	return 1
 end
 
+was.iuserdata=function(i)
+	local v=was.userdata.data[i]
+	if v and v.type~="set var" and v.type~="function" and v.type~="bracket end" then
+		if v.type=="var" then
+			v=was.userdata.var[v.content]
+		else
+			v=v.content
+		end
+	else
+		return 
+	end
+	return v
+end
 
 was.compiler=function(input_text,user)
 	if type(input_text)~="string" or input_text:len()<2 then
@@ -222,6 +228,7 @@ end
 was.run_function=function(func_name,data,VAR,i,ii)
 	local d={}
 	local open=0
+	was.userdata.function_name=func_name
 	while i<=ii do
 		if data[i].type=="bracket end" then
 			if open<=0 then
@@ -236,6 +243,7 @@ was.run_function=function(func_name,data,VAR,i,ii)
 		if data[i].type=="number" or data[i].type=="string" or data[i].type=="bool" then
 			table.insert(d,data[i].content)
 		elseif data[i].type=="symbol" and was.symbols[data[i].content] then
+			was.userdata.index=i
 			local a=was.symbols[data[i].content]()
 			if a then
 				table.insert(d, a)
@@ -243,12 +251,14 @@ was.run_function=function(func_name,data,VAR,i,ii)
 		elseif data[i].type=="var" then
 			table.insert(d,VAR[data[i].content] or func_name=="if" and "!") 
 		elseif data[i].type=="function" then
+			was.userdata.index=i
 			local re,newi=was.run_function(data[i].content,data,VAR,i+1,#data) 
 			i=newi
 			if re then
 				table.insert(d,re or func_name=="if" and "!")
 			end
 		end
+
 		i=i+1
 	end
 
@@ -260,7 +270,7 @@ was.run_function=function(func_name,data,VAR,i,ii)
 end
 
 was.run=function(input,user)
-	local VAR=was.user[user].global
+	local VAR=table.copy(was.user[user].global)
 	local state=0
 	local elsestate=0
 
@@ -271,7 +281,6 @@ was.run=function(input,user)
 		data={},
 	}
 
-
 --print(dump(input))
 	for index,v in ipairs(input) do
 		local i=1
@@ -279,10 +288,9 @@ was.run=function(input,user)
 
 			was.userdata.data=v
 			was.userdata.index=i
-			was.userdata.function_name=""
+			was.userdata.var=VAR
 
 			if v[i].ifstate then
-				was.userdata.function_name=v[i].content
 				if v[i].content=="if" then
 					if state==0 and was.run_function(v[i].content,v,VAR,i+1,#v)==true then
 						state=0
@@ -321,7 +329,6 @@ was.run=function(input,user)
 				elseif ndat.type=="var" and VAR[ndat.content] then
 					VAR[v[i].content]=VAR[ndat.content]
 				elseif ndat.type=="function" and was.functions[ndat.content] then
-					was.userdata.function_name=ndat.content
 					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v)
 				else
 					VAR[v[i].content]=nil
@@ -333,7 +340,6 @@ was.run=function(input,user)
 
 				i=i+1
 			elseif v[i].type=="function" then
-				was.userdata.function_name=v[i].content
 				was.run_function(v[i].content,v,VAR,i+1,#v)
 				i=i+1
 			elseif v[i].type=="symbol" and was.symbols[v[i].content] then
