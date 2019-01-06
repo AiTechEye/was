@@ -34,13 +34,30 @@ was.register_function("dump",{
 ================= DATATYPES = VARIABLES =================
 --]]
 
+was.register_function("percent",{
+	info="return percent of number (n1 n2)",
+	action=function(a,b)
+		if was.is_number(a) and was.is_number(b) then
+			return (a / b) *100
+		end
+	end
+})
+
+
+was.register_function("pi",{
+	info="return Pi",
+	action=function()
+		return math.pi
+	end
+})
+
 was.register_function("math",{
-	info="Math + - * / ('-' 1 2 67...)",
+	info="Math + - * % ^ /  ('-' 1 2 67...)",
 	packed=true,
 	action=function(a)
 		local c=a[1]
 		local n=a[2]
-		if not (was.is_string(c) and c:len()==1 and string.find("+-*/",c)) then
+		if not (was.is_string(c) and c:len()==1 and string.find("%^+-*/",c)) then
 			return
 		end
 
@@ -54,6 +71,10 @@ was.register_function("math",{
 					n=n*a[i]
 				elseif c=="/" then
 					n=n/a[i]
+				elseif c=="^" then
+					n=n^a[i]
+				elseif c=="%" then
+					n=n%a[i]
 				end
 			end
 		end
