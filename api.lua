@@ -33,6 +33,9 @@ end
 was.is_pos=function(pos)
 	return type(pos)=="table" and type(pos.x)=="number" and type(pos.y)=="number" and type(pos.z)=="number"
 end
+was.is_table=function(t)
+	return type(t)=="table"
+end
 
 was.ilastuserdata=function()
 	for i=was.userdata.index,#was.userdata.data,1 do
@@ -62,14 +65,13 @@ was.compiler=function(input_text,user)
 		return
 	end
 	input_text=input_text .."\n"
-	input_text=input_text:gsub("%(","{")
-	input_text=input_text:gsub("%)","}")
+	input_text=input_text:gsub("%("," { ")
+	input_text=input_text:gsub("%)"," } ")
 	input_text=input_text:gsub("%[","")
 	input_text=input_text:gsub("%]","")
 
 	for i=1,was.symbols_characters:len(),1 do
 		local c=was.symbols_characters:sub(i,i)
-		input_text=input_text:gsub("%" ..c," " .. c .." ")
 	end
 
 	local c
@@ -79,62 +81,55 @@ was.compiler=function(input_text,user)
 	local chr
 	local s
 	local ob={type="",content=""}
-	for i=1,input_text:len(),1 do
+	local i=1
+	while i<=input_text:len() do
 		c=input_text:sub(i,i)
 
 		n=was.num(c)
 		chr=was.chr(c)
 		s=was.symbol(c)
---string
+
 		if c=='"' and ob.type~="string" then
+--string
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
 			ob.type="string"
+			c=""
 		elseif c=='"' and ob.type=="string" then
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
-		end
-		if ob.type=="string" and c~='"' then
-			ob.content=ob.content .. c
-		end	
+		elseif n and ob.type=="" then
 --number
-		if n and ob.type=="" then
 			ob.type="number"
 		elseif not n and ob.type=="number" and c~="." then
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
-		end
-		if ob.type=="number" then
-			ob.content=ob.content .. c
-		end
+			i=i-1
+		elseif ob.type=="" and chr then
 --var
-		if ob.type=="" and chr then
 			ob.type="var"
 		elseif ob.type=="var" and not chr and c~="." then
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
-		end
-		if ob.type=="var" then
-			ob.content=ob.content .. c
-		end
+			i=i-1
+		elseif ob.type=="" and s then
 --symbols
-		if ob.type=="" and s then
 			ob.type="symbol"
 		elseif ob.type=="symbol" and not s then
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
-		end
-		if ob.type=="symbol" then
-			ob.content=ob.content .. c
-		end
-
+			i=i-1
+		elseif c=="\n" then
 --end of line
-		if c=="\n" then
 			if ob.content~="" then table.insert(data,ob) end
 			table.insert(output_data,data)
 			ob={type="",content=""}
 			data={}
 		end
+		if ob.type~="" then
+			ob.content=ob.content .. c
+		end	
+		i=i+1
 	end
 	local output_data2={}
 	local func
@@ -166,10 +161,6 @@ was.compiler=function(input_text,user)
 			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
 --global var
 				data[ii+1].global=true
-			elseif data[ii+1] and data[ii].type=="symbol" and data[ii+1].type=="symbol" and was.symbols[data[ii].content ..  data[ii+1].content] and data[ii].content~="}" and data[ii+1].content~="}" then
---2 symbols to oparator
-				data[ii].content=data[ii].content .. data[ii+1].content
-				table.remove(data,ii+1)
 			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="=" and not was.symbols[data[ii+1].content ..  data[ii+2].content] then
 --var =
 				if func then

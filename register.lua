@@ -1,27 +1,4 @@
 
-was.register_symbol("+",
-	function()
-		local i=was.userdata.index
-		local a=was.iuserdata(i-1)
-		local b=was.iuserdata(i+1)
-
-
-
-		if was.is_number(a) and was.is_number(b) then
---print("+",a,b,a+b)
-			return a+b
-		end
---was.ilastuserdata()
-
-	end,
-	"return username"
-)
-
-
-
-
-
-
 --[[
 ================= SYMBOLS =================
 --]]
@@ -57,10 +34,135 @@ was.register_function("dump",{
 ================= DATATYPES = VARIABLES =================
 --]]
 
+was.register_function("math",{
+	info="Math + - * / ('-' 1 2 67...)",
+	packed=true,
+	action=function(a)
+		local c=a[1]
+		local n=a[2]
+		if not (was.is_string(c) and c:len()==1 and string.find("+-*/",c)) then
+			return
+		end
+
+		for i=3,#a,1 do
+			if was.is_number(a[i]) then
+				if c=="+" then
+					n=n+a[i]
+				elseif c=="-" then
+					n=n-a[i]
+				elseif c=="*" then
+					n=n*a[i]
+				elseif c=="/" then
+					n=n/a[i]
+				end
+			end
+		end
+		return n
+	end
+})
+
+was.register_function("table",{
+	info="return empty table",
+	action=function()
+		return {}
+	end
+})
+
+was.register_function("getvalue",{
+	info="get table value (table key-string/number)",
+	action=function(t,i)
+		if was.is_table(t) and (was.is_number(i) or was.is_string(i)) then
+			return t[i]
+		end
+	end
+})
+
+was.register_function("setvalue",{
+	info="set table key value (table string/number value )",
+	action=function(t,i,value)
+		if was.is_table(t) and was.is_number(i) and not value then
+			table.remove(t,i)
+			return t
+		elseif was.is_table(t) and (was.is_number(i) or was.is_string(i)) then
+			t[i]=value
+			return t
+		end
+	end
+})
+
+was.register_function("remove",{
+	info="remove from table by index (table n) last value (table) key (table string)",
+	action=function(t,i)
+		if was.is_table(t) then
+			if was.is_number(i) then
+				table.remove(t,i)
+				return t
+			elseif was.is_string(i) then
+				t[i]=nil
+				return t
+			else
+				table.remove(t,#t)
+				return t
+			end
+		else
+			return t
+		end
+	end
+})
+
+was.register_function("insert",{
+	info="Insert variables and datatypes to an table (table n1 s1 table1 ...)",
+	packed=true,
+	action=function(a)
+		local n={}
+		local s=1
+		if was.is_table(a[1]) then
+			n=table.copy(a[1])
+			s=2
+		end
+		for i=s,#a,1 do
+			if a[i] then
+				table.insert(n,a[i])
+			end
+		end
+		return n
+	end
+})
+
+was.register_function("merge",{
+	info="Merge variables and datatypes (s1 n1 s...) or (table table2 s n)",
+	packed=true,
+	action=function(a)
+		local n=""
+		if was.is_table(a[1]) then
+			n={}
+			for i,v in ipairs(a) do
+				if was.is_string(v) or was.is_number(v) then
+					table.insert(n,v)
+				elseif was.is_table(v) then
+					for ii,vv in pairs(v) do
+						table.insert(n,vv)
+					end
+				end
+			end
+		elseif was.is_string(a[1]) or was.is_number(a[1]) then
+			for i,v in ipairs(a) do
+				if was.is_string(v) or was.is_number(v) then
+					n=n .. v
+				else
+					break
+				end
+			end
+		end
+		return n
+	end
+})
+
+
 was.register_function("pos",{
 	info="numbers to pos (n1 n2 n3)",
 	action=function(n1,n2,n3)
-		if type(n1)=="number" and type(n2)=="number" and type(n3)=="number" then
+		if was.is_number(n1) and was.is_number(n2) and was.is_number(n3) then
 			return {x=n1,y=n2,z=n3}
 		end
 	end

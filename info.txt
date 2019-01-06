@@ -9,6 +9,7 @@ function		pos(1 2 a)
 symbol		! (nil) ? (username)
 
 =====VARIABLE=====
+a variable can only be set to 1 thing at time
 
 varname		a variable
 varname =	set variable value
