@@ -32,13 +32,13 @@ was={
 dofile(minetest.get_modpath("was") .. "/api.lua")
 dofile(minetest.get_modpath("was") .. "/register.lua")
 
-minetest.register_chatcommand("was", {
-	description = "World action script gui",
-	func = function(name, param)
-		was.gui(name)
-		return true
-	end,
-})
+--minetest.register_chatcommand("was", {
+--	description = "World action script gui",
+--	func = function(name, param)
+--		was.gui(name)
+--		return true
+--	end,
+--})
 
 minetest.register_node("was:computer", {
 	description = "Computer",
@@ -131,16 +131,21 @@ was.gui=function(name,msg,other)
 	funcs=funcs:sub(0,funcs:len()-1)
 	symbs=symbs:sub(0,symbs:len()-1)
 
-	local gui="size[20,12]"
+	local gui="size[20,12.1]"
 	.."textarea[0,1.3;17,13;text;;" .. text .. "]"
 	.."label[0,0.6;".. minetest.colorize("#00FF00",(msg or "")) .."]"
-	.."button[0,-0.2;1.3,1;run;Run]"
-	.."button[1,-0.2;1.3,1;save;Save]"
-	.."button[2,-0.2;1.5,1;lines;Lines " ..was.user[name].lines.."]"
+	.."button[-0.2,-0.2;1.3,1;run;Run]"
+	.."button[0.8,-0.2;1.3,1;save;Save]"
+	.."button[1.8,-0.2;1.5,1;lines;Lines " ..was.user[name].lines.."]"
 	.."button[3,-0.2;1.5,1;storage;Storage]"
-	.."dropdown[16.6,0.4;3,12;slist;" .. symbs ..";]"
-	.."textlist[16.6,1;3,12;list;" .. funcs .."]"
+	.."field[4.6,0.1;3,1;pupos;;" .. (was.user[name].punchpos or "") .."]"
+	.."dropdown[16.5,0.4;4,12;slist;" .. symbs ..";]"
+	.."textlist[16.5,1;4,12;list;" .. funcs .."]"
 	.."checkbox[16.6,-0.4;inserttext;Insert text;".. was.user[name].inserttext.."]"
+
+	.."tooltip[pupos;Press Enter and punch on a node to return the position, or punch it again to get its name, Press Enter to move the text to the textarea]"
+
+	was.user[name].punchpos=nil
 
 	minetest.after(0.1, function(gui,name)
 		return minetest.show_formspec(name, "was.gui",gui)
@@ -150,35 +155,27 @@ end
 
 minetest.register_on_player_receive_fields(function(user, form, pressed)
 
-
-	if form=="was.guistorage" then
-	end
-
-
 	if form=="was.gui" then
 		local name=user:get_player_name()
 		if (pressed.quit and not pressed.key_enter) or not was.user[name] then
 			if was.user[name] then
-				was.user[name].nodepos=nil
+				was.user[name]=nil
 			end
 			return
 		end
-
 
 		if pressed.storage and was.user[name].nodepos then
 			local gui="size[10,9]"
 			.."list[nodemeta:" .. was.user[name].nodepos.x .."," .. was.user[name].nodepos.y .."," .. was.user[name].nodepos.z ..";storage;0,0;10,5;]"
 			.."list[current_player;main;1,5.2;8,4;]"
 			.."listring[current_player;main]"
-			.."listring[current_name;storage]"
+			.."listring[nodemeta:" .. was.user[name].nodepos.x .."," .. was.user[name].nodepos.y .."," .. was.user[name].nodepos.z ..";storage]"
 
 			minetest.after(0.1, function(gui,name)
 				return minetest.show_formspec(name, "was.guistorage",gui)
 			end, gui,name)
 			return
 		end
-
-
 
 		local funcs=was.user[name].funcs
 		was.user[name].funcs={}
@@ -233,6 +230,15 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 				meta:set_string("text",minetest.serialize(was.user[name].text))
 				was.gui(name,"Text saved successful")
 			end
+		elseif pressed.pupos and pressed.key_enter then
+			if pressed.pupos=="" then
+				was.user[name].punchpos=""
+				minetest.close_formspec(name,form)
+				minetest.chat_send_player(name, "Punch a node, then come back here")
+			elseif pressed.pupos~="" then
+				was.user[name].text=was.user[name].text ..  pressed.pupos
+				was.gui(name)
+			end
 		elseif pressed.run then
 			local msg=was.compiler(pressed.text,name)
 
@@ -246,4 +252,15 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 	end
 end)
 
---was.compiler("a=1+2")
+minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
+	local name=puncher:get_player_name()
+	if was.user[name] and was.user[name].punchpos then
+		if was.user[name].punchpos=="" or was.user[name].punchpos:find(":") then
+			was.user[name].punchpos=pos.x .." " ..pos.y .." " .. pos.z
+			minetest.chat_send_player(name, "Position " .. was.user[name].punchpos)
+		else
+			was.user[name].punchpos=minetest.get_node(pos).name
+			minetest.chat_send_player(name, "Name " .. was.user[name].punchpos)
+		end	
+	end
+end)

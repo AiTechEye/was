@@ -257,9 +257,13 @@ was.register_function("node.set",{
 })
 
 was.register_function("node.add",{
-	info="add node (pos,nodename)",
+	info="add node (not replacing buildable_to) (pos,nodename)",
 	action=function(pos,name)
 		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
+			local n=minetest.registered_nodes[minetest.get_node(pos).name]
+			if n and n.buildable_to==false then
+				return
+			end
 			if was.user[was.userdata.name].nodepos then
 				local inv=minetest.get_meta(was.user[was.userdata.name].nodepos):get_inventory()
 				if not inv:contains_item("storage",name) then
@@ -267,7 +271,7 @@ was.register_function("node.add",{
 				end
 				inv:remove_item("storage",name)
 			end
-			minetest.add_node(pos,{name=name})
+			minetest.set_node(pos,{name=name})
 		end
 	end
 })

@@ -1,4 +1,9 @@
 World Action Script
+Version: 1
+License: code: LGPL-2.11
+
+in game programing, not in lua
+
 
 =====DATA TYPES=====
 bool		true	false
