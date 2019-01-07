@@ -12,7 +12,7 @@ was.register_symbol("?",
 
 was.register_symbol("+=",function()
 		local i=was.userdata.index
-		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
 			return was.iuserdata(i-1) + was.iuserdata(i+1)
 		end
 	end,
@@ -21,7 +21,7 @@ was.register_symbol("+=",function()
 
 was.register_symbol("-=",function()
 		local i=was.userdata.index
-		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
 			return was.iuserdata(i-1) - was.iuserdata(i+1)
 		end
 	end,
@@ -31,7 +31,7 @@ was.register_symbol("-=",function()
 
 was.register_symbol("*=",function()
 		local i=was.userdata.index
-		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
 			return was.iuserdata(i-1) * was.iuserdata(i+1)
 		end
 	end,
@@ -41,7 +41,7 @@ was.register_symbol("*=",function()
 
 was.register_symbol("/=",function()
 		local i=was.userdata.index
-		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
 			return was.iuserdata(i-1) / was.iuserdata(i+1)
 		end
 	end,
@@ -50,7 +50,7 @@ was.register_symbol("/=",function()
 
 was.register_symbol("%=",function()
 		local i=was.userdata.index
-		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
 			return was.iuserdata(i-1) % was.iuserdata(i+1)
 		end
 	end,
