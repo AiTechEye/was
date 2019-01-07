@@ -272,6 +272,21 @@ was.register_function("player.get_pos",{
 ================= MISC =================
 --]]
 
+was.register_function("for",{
+	info="",
+	action=function(s,e)
+		if was.is_number(s) and was.is_number(e) then
+			if s<0 or e<0 then
+				return {msg='No negative value to "for"'}
+			elseif math.abs(math.abs(s)-math.abs(e))>1000 then
+				return {msg='Too high number to "for" (max 1000)'}
+			end
+			return {s=s,e=e}
+		end
+		return {msg='void arguments to "for", ' .. type(s) .." "  .. type(e)}
+	end
+})
+
 was.register_function("elseif",{
 	packed=true,
 	info="Used with if",

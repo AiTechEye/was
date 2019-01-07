@@ -135,6 +135,7 @@ was.compiler=function(input_text,user)
 	local func
 --print(dump(output_data))
 	local ifends=0
+	local nexts=0
 	for i,v in ipairs(output_data) do
 		local ii=1
 		data=v
@@ -183,12 +184,25 @@ was.compiler=function(input_text,user)
 				if data[ii].content=="if" then
 					data[ii].ifstate=true
 					ifends=ifends+1
+				elseif data[ii].content=="for" then
+					if nexts==1 then
+						return 'ERROR line '.. i ..': only 1 "for" at time'
+					end
+					nexts=1
+					data[ii].forstate=true
 				end
 				table.remove(data,ii+1)
 			elseif data[ii].content=="}" then
 --)				
 				func=nil
 				data[ii].type="bracket end"
+			elseif data[ii].type=="var" and data[ii].content=="next" then
+				if nexts==0 then
+					return 'ERROR line '.. i ..': no "for" to return to'
+				end
+				nexts=0
+				data[ii].forstate=true
+
 			end
 			ii=ii+1
 		end
@@ -214,11 +228,16 @@ was.compiler=function(input_text,user)
 		return 'ERROR: Missing ' .. ifends .. ' if "end"'
 	end
 
+	if nexts>0 then
+		return 'ERROR: Missing ' .. nexts .. ' for "next"'
+	end
+
+
 	user=user or ":server:"
 	was.user[user]=was.user[user] or {}
 	was.user[user].global=was.user[user].global or {}
 
-	was.run(output_data2,user)
+	return was.run(output_data2,user)
 end
 
 was.run_function=function(func_name,data,VAR,i,ii)
@@ -269,7 +288,7 @@ was.run=function(input,user)
 	local VAR=table.copy(was.user[user].global)
 	local state=0
 	local elsestate=0
-
+	local forstate
 	was.userdata={
 		name=user,
 		function_name="",
@@ -278,7 +297,12 @@ was.run=function(input,user)
 	}
 
 --print(dump(input))
-	for index,v in ipairs(input) do
+
+	local index=0
+	while index<#input do
+	index=index+1
+	local v=input[index]
+
 		local i=1
 		while i<=#v do
 
@@ -286,7 +310,27 @@ was.run=function(input,user)
 			was.userdata.index=i
 			was.userdata.var=VAR
 
-			if v[i].ifstate then
+			if v[i].forstate then
+				if v[i].content=="next" then
+
+					if forstate.i<forstate.e then
+						index=forstate.re
+						forstate.i=forstate.i+1
+					else
+						forstate=nil
+					end
+				elseif v[i].content=="for" then
+					local fo=was.run_function(v[i].content,v,VAR,i+1,#v)
+					forstate={
+						re=index,
+						i=fo.s,
+						e=fo.e,
+					}
+					if fo.msg then
+						return fo.msg
+					end
+				end
+			elseif v[i].ifstate then
 				if v[i].content=="if" then
 					if state==0 and was.run_function(v[i].content,v,VAR,i+1,#v)==true then
 						state=0
