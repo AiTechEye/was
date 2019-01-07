@@ -60,7 +60,7 @@ was.register_symbol("#",function(),"info"
 The user's information are stored in the global variable "was.userdata"
 but is only able while the function / variables are active.
 
-was.iuserdata(index)	--return indexed data, will return "function", "set var" and ")" as nil to not confuse
+was.iuserdata(index)	--return indexed active data
 was.ilastuserdata()		--return last index
 
 was.userdata.data		--the active line

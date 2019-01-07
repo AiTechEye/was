@@ -12,7 +12,7 @@ end
 
 was.chr=function(t)
 	local a=string.byte(t)
-	return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="." or t=="_" or t=="-"
+	return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="." or t=="_"
 end
 
 was.num=function(t)
@@ -48,14 +48,12 @@ end
 
 was.iuserdata=function(i)
 	local v=was.userdata.data[i]
-	if v and v.type~="set var" and v.type~="function" and v.type~="bracket end" then
+	if v then
 		if v.type=="var" then
 			v=was.userdata.var[v.content]
 		else
 			v=v.content
 		end
-	else
-		return 
 	end
 	return v
 end
@@ -69,10 +67,6 @@ was.compiler=function(input_text,user)
 	input_text=input_text:gsub("%)"," } ")
 	input_text=input_text:gsub("%[","")
 	input_text=input_text:gsub("%]","")
-
-	for i=1,was.symbols_characters:len(),1 do
-		local c=was.symbols_characters:sub(i,i)
-	end
 
 	local c
 	local data={}
@@ -382,10 +376,9 @@ was.run=function(input,user)
 			elseif v[i].type=="function" then
 				was.run_function(v[i].content,v,VAR,i+1,#v)
 				i=i+1
-			elseif v[i].type=="symbol" and was.symbols[v[i].content] then
-				was.symbols[v[i].content]()
+			elseif v[i].type=="symbol" and was.symbols[v[i].content] and v[i-1] and v[i-1].type=="var" then
+				VAR[v[i-1].content]=was.symbols[v[i].content]()
 			end
-
 			i=i+1
 		end
 	end

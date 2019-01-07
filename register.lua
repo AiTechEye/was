@@ -10,6 +10,58 @@ was.register_symbol("?",
 	"return username"
 )
 
+was.register_symbol("+=",function()
+		local i=was.userdata.index
+		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+			return was.iuserdata(i-1) + was.iuserdata(i+1)
+		end
+	end,
+	"var + n"
+)
+
+was.register_symbol("-=",function()
+		local i=was.userdata.index
+		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+			return was.iuserdata(i-1) - was.iuserdata(i+1)
+		end
+	end,
+	"var - n"
+)
+
+
+was.register_symbol("*=",function()
+		local i=was.userdata.index
+		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+			return was.iuserdata(i-1) * was.iuserdata(i+1)
+		end
+	end,
+	"var * n"
+)
+
+
+was.register_symbol("/=",function()
+		local i=was.userdata.index
+		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+			return was.iuserdata(i-1) / was.iuserdata(i+1)
+		end
+	end,
+	"var / n"
+)
+
+was.register_symbol("%=",function()
+		local i=was.userdata.index
+		if was.is_number(was.iuserdata(i+1)) and was.is_number(was.iuserdata(i+1)) then
+			return was.iuserdata(i-1) % was.iuserdata(i+1)
+		end
+	end,
+	"var % n"
+)
+
+was.register_symbol("!=",function()
+	end,
+	"var = nothing"
+)
+
 --[[
 ================= SERVER =================
 --]]
@@ -273,7 +325,7 @@ was.register_function("player.get_pos",{
 --]]
 
 was.register_function("for",{
-	info="",
+	info="for loop (startn endn) max loops is 1000, no negative values",
 	action=function(s,e)
 		if was.is_number(s) and was.is_number(e) then
 			if s<0 or e<0 then
