@@ -296,7 +296,9 @@ was.register_function("node.remove",{
 was.register_function("node.get_name",{
 	info="get node name (pos)",
 	action=function(pos)
-		return (was.is_pos(pos) and minetest.get_node(pos).name or "")
+		if was.is_pos(pos) then
+			return minetest.get_node(pos).name
+		end
 	end
 })
 
@@ -311,10 +313,23 @@ was.register_function("node.exist",{
 ================= PLAYER =================
 --]]
 
+was.register_function("player.msg",{
+	privs={shout=true},
+	info="Message to player (playername text)",
+	action=function(name,msg)
+print(was.is_string(name), was.is_string(msg))
+
+		if not (was.is_string(name) and was.is_string(msg)) then
+			return
+		end
+		minetest.chat_send_player(name, "<" .. was.userdata.name .."> " .. msg)
+	end
+})
+
 was.register_function("player.get_pos",{
 	info="get player name (playername)",
 	action=function(name)
-		if type(name)~="string" then
+		if not was.is_string(name) then
 			return
 		end
 		local p=minetest.get_player_by_name(name)
