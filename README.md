@@ -1,6 +1,4 @@
-# was
-
-World Action Script
+# World Action Script (was)
 Version: 1
 License: code: LGPL-2.11
 
