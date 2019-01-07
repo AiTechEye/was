@@ -12,7 +12,6 @@ was={
 	},
 	privs={},
 	user={},
-	username="",
 	userdata={},
 	symbols={
 		["!"]=function()
@@ -48,6 +47,7 @@ minetest.register_node("was:computer", {
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		meta:set_string("owner",placer:get_player_name() or "")
+		meta:get_inventory():set_size("storage", 50)
 	end,
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
 		local meta=minetest.get_meta(pos)
@@ -66,7 +66,7 @@ minetest.register_node("was:computer", {
 	can_dig = function(pos, player)
 		local meta=minetest.get_meta(pos)
 		local name=player:get_player_name() or ""
-		if meta:get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
+		if meta:get_inventory():is_empty("storage") and (meta:get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true})) then
 			return true
 		end
 	end,
@@ -137,6 +137,7 @@ was.gui=function(name,msg,other)
 	.."button[0,-0.2;1.3,1;run;Run]"
 	.."button[1,-0.2;1.3,1;save;Save]"
 	.."button[2,-0.2;1.5,1;lines;Lines " ..was.user[name].lines.."]"
+	.."button[3,-0.2;1.5,1;storage;Storage]"
 	.."dropdown[16.6,0.4;3,12;slist;" .. symbs ..";]"
 	.."textlist[16.6,1;3,12;list;" .. funcs .."]"
 	.."checkbox[16.6,-0.4;inserttext;Insert text;".. was.user[name].inserttext.."]"
@@ -148,6 +149,12 @@ end
 
 
 minetest.register_on_player_receive_fields(function(user, form, pressed)
+
+
+	if form=="was.guistorage" then
+	end
+
+
 	if form=="was.gui" then
 		local name=user:get_player_name()
 		if (pressed.quit and not pressed.key_enter) or not was.user[name] then
@@ -156,6 +163,22 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			end
 			return
 		end
+
+
+		if pressed.storage and was.user[name].nodepos then
+			local gui="size[10,9]"
+			.."list[nodemeta:" .. was.user[name].nodepos.x .."," .. was.user[name].nodepos.y .."," .. was.user[name].nodepos.z ..";storage;0,0;10,5;]"
+			.."list[current_player;main;1,5.2;8,4;]"
+			.."listring[current_player;main]"
+			.."listring[current_name;storage]"
+
+			minetest.after(0.1, function(gui,name)
+				return minetest.show_formspec(name, "was.guistorage",gui)
+			end, gui,name)
+			return
+		end
+
+
 
 		local funcs=was.user[name].funcs
 		was.user[name].funcs={}

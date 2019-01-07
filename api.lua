@@ -143,6 +143,11 @@ was.compiler=function(input_text,user)
 --number
 				data[ii].content=tonumber(data[ii].content)
 
+				if data[ii-1] and data[ii-1].content=="-" then
+					data[ii].content=-data[ii].content
+					table.remove(data,ii-1)
+					ii=ii-1
+				end
 			elseif data[ii].type=="var" and (data[ii].content=="and" or data[ii].content=="or" or data[ii].content=="not" or data[ii].content=="nor") then
 --oparator
 				data[ii].type="symbol"
@@ -194,7 +199,7 @@ was.compiler=function(input_text,user)
 
 		table.insert(output_data2,data)
 	end
-
+--print(dump(output_data2))
 	if user then
 		for i,c in pairs(output_data2) do
 		for name,v in pairs(c) do

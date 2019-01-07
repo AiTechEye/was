@@ -34,7 +34,7 @@ was.register_function("dump",{
 ================= DATATYPES = VARIABLES =================
 --]]
 
-was.register_function("percent",{
+was.register_function("math.percent",{
 	info="return percent of number (n1 n2)",
 	action=function(a,b)
 		if was.is_number(a) and was.is_number(b) then
@@ -44,7 +44,7 @@ was.register_function("percent",{
 })
 
 
-was.register_function("pi",{
+was.register_function("math.pi",{
 	info="return Pi",
 	action=function()
 		return math.pi
@@ -206,10 +206,33 @@ was.register_function("node.set",{
 
 was.register_function("node.add",{
 	info="add node (pos,nodename)",
-	privs={give=true,kick=true},
 	action=function(pos,name)
 		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
+			if was.user[was.userdata.name].nodepos then
+				local inv=minetest.get_meta(was.user[was.userdata.name].nodepos):get_inventory()
+				if not inv:contains_item("storage",name) then
+					return
+				end
+				inv:remove_item("storage",name)
+			end
 			minetest.add_node(pos,{name=name})
+		end
+	end
+})
+
+was.register_function("node.remove",{
+	info="remove node (pos)",
+	action=function(pos)
+		if was.is_pos(pos) and not minetest.is_protected(pos,was.userdata.name) then
+			if was.user[was.userdata.name].nodepos then
+				local n=minetest.registered_nodes[minetest.get_node(pos).name]
+				local player=minetest.get_player_by_name(was.userdata.name)
+				if n and ((n.can_dig and player and n.can_dig(pos, player)==false) or (n.pointable==false) or n.drop=="") then
+					return
+				end
+				minetest.get_meta(was.user[was.userdata.name].nodepos):get_inventory():add_item("storage",minetest.get_node(pos).name)
+			end
+			minetest.remove_node(pos)	
 		end
 	end
 })
@@ -217,7 +240,7 @@ was.register_function("node.add",{
 was.register_function("node.get_name",{
 	info="get node name (pos)",
 	action=function(pos)
-		return (was.is_pos(pos) and minetest.get_node(pos).name or nil)
+		return (was.is_pos(pos) and minetest.get_node(pos).name or "")
 	end
 })
 
@@ -254,12 +277,6 @@ was.register_function("elseif",{
 	info="Used with if",
 	action=function(arg)
 		return was.functions["if"](arg)
-	end
-})
-was.register_function("else",{
-	packed=true,
-	info="Used with if",
-	action=function(arg)
 	end
 })
 
