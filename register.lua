@@ -66,22 +66,6 @@ was.register_symbol("!=",function()
 ================= SERVER =================
 --]]
 
-was.register_function("print",{
-	privs={server=true},
-	packed=true,
-	action=function(a)
-		print(unpack(a))
-	end
-})
-
-was.register_function("dump",{
-	privs={server=true},
-	packed=true,
-	action=function(a)
-		print(dump(a))
-	end
-})
-
 --[[
 ================= DATATYPES = VARIABLES =================
 --]]
@@ -317,8 +301,6 @@ was.register_function("player.msg",{
 	privs={shout=true},
 	info="Message to player (playername text)",
 	action=function(name,msg)
-print(was.is_string(name), was.is_string(msg))
-
 		if not (was.is_string(name) and was.is_string(msg)) then
 			return
 		end
@@ -436,5 +418,56 @@ was.register_function("if",{
 		else
 			return true
 		end
+	end
+})
+
+was.register_function("print",{
+	packed=true,
+	action=function(a)
+		if was.user[was.userdata.name] then
+			local ud=was.user[was.userdata.name]
+			local s=""
+			for i,v in ipairs(a) do
+				if was.is_string(v) or was.is_number(v) then
+					s=s .. v .. " "
+				elseif was.is_table(v) then
+					s=s .. "table "
+				elseif type(v)=="boolean" then
+					if v==true then
+						s=s .."true "
+					else
+						s=s .."false "
+					end
+				else
+					s=s .."!"
+				end
+			end
+
+			if s:len()>60 then
+				s=s:sub(0,60)
+			end
+			if s:len()>30 then
+				s=s:sub(0,30) .."\n" .. s:sub(31,s:len())
+			end
+			ud.console_text=ud.console_text or ""
+			ud.console_lines=(ud.console_lines and (ud.console_lines+1)) or 1
+			ud.console_text=ud.console_text .. s .. "\n"
+			ud.console="true"
+			if ud.console_lines>27 then
+				ud.console_text=ud.console_text:sub(ud.console_text:find("\n")+1,ud.console_text:len())
+				ud.console_lines=27
+			end
+			was.gui(was.userdata.name)
+		elseif minetest.check_player_privs(was.userdata.name,{server=true}) then
+			print(unpack(a))
+		end
+	end
+})
+
+was.register_function("dump",{
+	privs={server=true},
+	packed=true,
+	action=function(a)
+		print(dump(a))
 	end
 })

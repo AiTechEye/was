@@ -111,11 +111,26 @@ end
 
 was.gui=function(name,msg,other)
 
-	was.user[name]=was.user[name] or {text=(other and other.text or ""),funcs={},inserttext="true",lines="off"}
+	was.user[name]=was.user[name] or {
+		text=(other and other.text or ""),
+		funcs={},
+		inserttext="true",
+		lines="off",
+		bg="true",
+		console="false",
+	}
 
 	local text=was.user[name].text
 	local funcs=""
 	local symbs="SYMBOLS,"
+	local tx=17
+	local console=""
+
+	if was.user[name].console=="true" then
+		tx=11
+		console="label[10.6,1.3;".. minetest.colorize("#00FF00", was.user[name].console_text or "") .."]"
+	end
+
 
 	for f,v in pairs(was.symbols) do
 		symbs=symbs .. f ..","
@@ -132,18 +147,27 @@ was.gui=function(name,msg,other)
 	symbs=symbs:sub(0,symbs:len()-1)
 
 	local gui="size[20,12.1]"
-	.."textarea[0,1.3;17,13;text;;" .. text .. "]"
+	.. (was.user[name].bg=="true" and "background[-0.5,-0.2;22,13;was_guibg.png]" or "")
+
+	.. console
+
+	.."textarea[0,1.3;" ..tx ..",13;text;;" .. text .. "]"
 	.."label[0,0.6;".. minetest.colorize("#00FF00",(msg or "")) .."]"
 	.."button[-0.2,-0.2;1.3,1;run;Run]"
 	.."button[0.8,-0.2;1.3,1;save;Save]"
 	.."button[1.8,-0.2;1.5,1;lines;Lines " ..was.user[name].lines.."]"
-	.."button[3,-0.2;1.5,1;storage;Storage]"
+	.."button[3.1,-0.2;1.5,1;storage;Storage]"
 	.."field[4.6,0.1;3,1;pupos;;" .. (was.user[name].punchpos or "") .."]"
 	.."dropdown[16.5,0.4;4,12;slist;" .. symbs ..";]"
 	.."textlist[16.5,1;4,12;list;" .. funcs .."]"
+
 	.."checkbox[16.6,-0.4;inserttext;Insert text;".. was.user[name].inserttext.."]"
+	.."checkbox[7.2,-0.2;bg;;".. was.user[name].bg .."]"
+	.."checkbox[7.7,-0.2;console;;".. was.user[name].console .."]"
 
 	.."tooltip[pupos;Press Enter and punch on a node to return the position, or punch it again to get its name, Press Enter to move the text to the textarea]"
+	.."tooltip[bg;Background]"
+	.."tooltip[console;Console]"
 
 	was.user[name].punchpos=nil
 
@@ -201,10 +225,16 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		elseif was.user[name].lines=="on" then
 			was.user[name].text=was.gui_delnumbers(was.user[name].text)
 			was.user[name].lines="off"
-		end
-
-		if pressed.inserttext then
+		elseif pressed.inserttext then
 			was.user[name].inserttext=pressed.inserttext
+		elseif pressed.bg then
+			was.user[name].bg=pressed.bg
+			was.gui(name)
+			return
+		elseif pressed.console then
+			was.user[name].console=pressed.console
+			was.gui(name)
+			return
 		end
 
 		if pressed.list and pressed.list~="IMV" then
@@ -245,6 +275,8 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			if msg then
 				was.user[name].text=was.gui_addnumbers(was.user[name].text)
 				was.user[name].lines="on"
+				was.userdata.name=name
+				was.functions["print"]({msg})
 			end
 
 			was.gui(name,msg)
