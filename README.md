@@ -1,6 +1,6 @@
 # World Action Script (was)  
 Version: 1  
-License: code: LGPL-2.11
+Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 
 in game programing, not in lua
 
