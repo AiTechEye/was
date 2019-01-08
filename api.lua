@@ -10,6 +10,15 @@ was.register_symbol=function(symbol,f,info)
 	was.info[symbol]=info
 end
 
+was.protected=function(pos)
+	if was.is_pos(pos) then
+		return minetest.is_protected(pos,was.userdata.name)
+	end
+end
+
+
+
+
 was.chr=function(t)
 	local a=string.byte(t)
 	return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="." or t=="_"

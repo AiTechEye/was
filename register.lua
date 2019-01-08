@@ -232,7 +232,7 @@ was.register_function("pos",{
 
 was.register_function("node.set",{
 	info="set node (pos,nodename)",
-	privs={give=true,ban=true},
+	privs={give=true,was=true},
 	action=function(pos,name)
 		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
 			minetest.set_node(pos,{name=name})
@@ -292,6 +292,137 @@ was.register_function("node.exist",{
 		return ((was.is_string(name) or nil) and minetest.registered_nodes[name]~=nil)
 	end
 })
+
+--[[
+================= NODEE=META =================
+--]]
+
+was.register_function("nodemeta.set_int",{
+	privs={was=true},
+	info="Set node meta (pos name number)",
+	action=function(pos,na,n)
+		if was.is_pos(pos) and was.is_string(na) and was.is_number(n) then
+			minetest.get_meta(pos):set_int(na,n)
+		end
+	end
+})
+
+was.register_function("nodemeta.get_int",{
+	privs={was=true},
+	info="Get node meta (pos name)",
+	action=function(pos,na)
+		if was.is_pos(pos) and was.is_string(na) then
+			return minetest.get_meta(pos):get_int(na)
+		end
+	end
+})
+
+was.register_function("nodemeta.set_string",{
+	privs={was=true},
+	info="Set node meta (pos name string)",
+	action=function(pos,na,n)
+		if was.is_pos(pos) and was.is_string(na) and was.is_string(n) then
+			minetest.get_meta(pos):set_string(na,n)
+		end
+	end
+})
+
+was.register_function("nodemeta.get_string",{
+	privs={was=true},
+	info="Get node meta (pos name)",
+	action=function(pos,na)
+		if was.is_pos(pos) and was.is_string(na) then
+			return minetest.get_meta(pos):get_string(na)
+		end
+	end
+})
+
+was.register_function("nodetimer.start",{
+	privs={was=true},
+	info="Start node timer (<time> <nothing or pos>) to start on another node requires was privilege ",
+	action=function(n,pos)
+		local u=was.user[was.userdata.name]
+		if was.protected(pos) then
+			return
+		elseif not pos and n and u.nodepos and was.is_number(n) then
+			minetest.get_node_timer(u.nodepos):start(n)
+		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_number(n) and was.is_pos(pos) then
+			minetest.get_node_timer(pos):start(n)
+		end
+	end
+})
+
+
+was.register_function("nodetimer.stop",{
+	privs={was=true},
+	info="Stop node timer (nothing or pos) to stop on another node requires was privilege ",
+	action=function(pos)
+		local u=was.user[was.userdata.name]
+		if was.protected(pos) then
+			return
+		elseif not pos and n and u.nodepos then
+			minetest.get_node_timer(u.nodepos):stop()
+		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
+			minetest.get_node_timer(pos):stop()
+		end
+	end
+})
+--[[
+================= PLAYER =================
+--]]
+if minetest.get_modpath("mesecons") then
+was.register_function("mesecon.on",{
+	privs={was=true},
+	info="Set mesecon on (nothing or pos) to effect another node requires was privilege ",
+	action=function(pos)
+		local u=was.user[was.userdata.name]
+		if was.protected(pos) then
+			return
+		elseif not pos and n and u.nodepos then
+			mesecon.receptor_on(u.nodepos)
+		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
+			mesecon.receptor_on(pos)
+		end
+	end
+})
+
+was.register_function("mesecon.off",{
+	privs={was=true},
+	info="Set mesecon off (nothing or pos) to effect another node requires was privilege ",
+	action=function(pos)
+		local u=was.user[was.userdata.name]
+		if was.protected(pos) then
+			return
+		elseif not pos and n and u.nodepos then
+			mesecon.receptor_off(u.nodepos)
+		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
+			mesecon.receptor_off(pos)
+		end
+	end
+})
+
+was.register_function("mesecon.send",{
+	privs={was=true},
+	info="Send a mesecon signal (nothing or pos) to effect another node requires was privilege ",
+	action=function(pos)
+		local u=was.user[was.userdata.name]
+		if was.protected(pos) then
+			return
+		elseif not pos and n and u.nodepos then
+			local p=u.nodepos
+			mesecon.receptor_on(p)
+			minetest.after(1, function(p)
+				mesecon.receptor_off(p)
+			end, p)
+		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
+			mesecon.receptor_on(pos)
+			minetest.after(1, function(pos)
+				mesecon.receptor_off(pos)
+			end, pos)
+		end
+	end
+})
+end
 
 --[[
 ================= PLAYER =================
