@@ -4,16 +4,17 @@ Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 
 in game programing, not in lua
 
+---
 
-=====DATA TYPES=====  
+#### =====DATA TYPES===== 
 bool		true	false  
 number		0	123.456	-5
 string		"asd 134"  
 var		string	number	function	var	bool  
-function		pos(1 2 a)  
+function	pos(1 2 a)  
 symbol		! (nil) ? (username)  
 
-=====VARIABLE=====  
+#### =====VARIABLE=====  
 a variable can only be set to 1 thing at time  
 
 varname		a variable  
@@ -28,16 +29,16 @@ a /= 2		divide
 a !=		a = nil (used becaouse you can't set a=nnll )
 note the character "-" can mess if it is written together another symbol
 
-#### add a node, could be
+**add a node, could be**
 node.add(pos( -1 2 34) "default:dirt")
 
-#### and...
+**and...**
 c = 34
 a = pos(1 2 c)
 dirt="default:dirt"
 node.add(a dirt)
 
-## ========IF=======
+#### ========IF=======
 
 if(a==b)  
 	..code..  
@@ -53,7 +54,7 @@ else
 	..code..  
 endif  
 
-========REGISTRY=FUNCTIONS=======
+#### ========REGISTRY=FUNCTIONS=======
 
 was.register_function("name"{  
 	info="",			--function description  
@@ -69,7 +70,7 @@ was.register_function("name"{
 	end  
 })  
 
-========REGISTRY=SYMBOLS=======  
+#### ========REGISTRY=SYMBOLS=======  
 a symbol are called while calling a function or setting a var  
 
 was.register_symbol("#",function(),"info"  
@@ -77,7 +78,7 @@ was.register_symbol("#",function(),"info"
 	end  
 })  
 
-========USERDATA=======
+#### ========USERDATA=======
 
 The user's information are stored in the global variable "was.userdata"  
 but is only able while the function / variables are active.  
