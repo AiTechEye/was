@@ -139,7 +139,8 @@ was.register_symbol("#",function(),"info"
 The user's information are stored in the global variable "was.userdata"  
 but is only able while the function / variables are active.  
 
-|variable / function| description|
+|variable / function|description |
+|-------------------|------------|
 |was.iuserdata(index)		|return indexed active data|
 |was.ilastuserdata()		|return last index|
 |was.userdata.data		|the active line|
