@@ -10,14 +10,19 @@ was.register_symbol=function(symbol,f,info)
 	was.info[symbol]=info
 end
 
+was.new_user=function(name,def)
+	was.user[name]=was.user[name] or {}
+	was.user[name].nodepos=def.nodepos
+	was.user[name].show_print=def.show_print
+	was.user[name].global=was.user[name].global or {}
+	was.user[name].delete_on_exit=def.delete_on_exit
+end
+
 was.protected=function(pos)
 	if was.is_pos(pos) then
 		return minetest.is_protected(pos,was.userdata.name)
 	end
 end
-
-
-
 
 was.chr=function(t)
 	local a=string.byte(t)
@@ -46,6 +51,10 @@ was.is_table=function(t)
 	return type(t)=="table"
 end
 
+was.nodepos=function()
+	return was.user[was.userdata.name] and was.user[was.userdata.name].nodepos
+end
+
 was.ilastuserdata=function()
 	for i=was.userdata.index,#was.userdata.data,1 do
 		if not was.userdata.data[i+1] or was.userdata.data[i].type=="bracket end" then
@@ -68,7 +77,7 @@ was.iuserdata=function(i)
 end
 
 was.compiler=function(input_text,user)
-	if type(input_text)~="string" or input_text:len()<2 then
+	if type(input_text)~="string" or input_text:len()<2 or type(user)~="string" then
 		return
 	end
 	input_text=input_text .."\n"
@@ -242,12 +251,11 @@ was.compiler=function(input_text,user)
 		return 'ERROR: Missing ' .. nexts .. ' for "next"'
 	end
 
-
-	user=user or ":server:"
-	was.user[user]=was.user[user] or {}
-	was.user[user].global=was.user[user].global or {}
-
-	return was.run(output_data2,user)
+	local msg=was.run(output_data2,user)
+	if was.user[user].delete_on_exit then
+		was.user[user]=nil
+	end
+	return 
 end
 
 was.run_function=function(func_name,data,VAR,i,ii)

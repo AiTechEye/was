@@ -42,17 +42,13 @@ was.gui_delnumbers=function(text)
 	return t
 end
 
-was.gui=function(name,msg,other)
+was.gui=function(name,msg)
 
-	was.user[name]=was.user[name] or {
-		text=(other and other.text or ""),
-		inserttext="true",
-		lines="off",
-		bg="true",
-		console="false",
-	}
+	was.user[name].inserttext=	was.user[name].inserttext or "true"
+	was.user[name].lines=	was.user[name].lines or "off"
+	was.user[name].bg=	was.user[name].bg or "true"
+	was.user[name].console=	was.user[name].console or "false"
 
-	local text=(other and other.text) or was.user[name].text or ""
 	local funcs=""
 	local symbs="SYMBOLS,"
 	local tx=17
@@ -82,7 +78,7 @@ was.gui=function(name,msg,other)
 
 	.. console
 
-	.."textarea[0,1.3;" ..tx ..",13;text;;" .. text .. "]"
+	.."textarea[0,1.3;" ..tx ..",13;text;;" .. (was.user[name].text or "") .. "]"
 	.."label[0,0.6;".. minetest.colorize("#00FF00",(msg or "")) .."]"
 	.."button[-0.2,-0.2;1.3,1;run;Run]"
 	.."button[0.8,-0.2;1.3,1;save;Save]"

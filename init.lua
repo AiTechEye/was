@@ -28,14 +28,64 @@ minetest.register_privilege("was", {
 })
 
 
+minetest.register_node("was:computer_closed", {
+	description = "Computer",
+	tiles = {
+		"was_pc_outside.png",
+	},
+	drawtype="nodebox",
+	paramtype = "light",
+	paramtype2="facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5, -0.5, -0.3, 0.5, -0.43, 0.5},
+		}
+	},
+	groups = {oddly_breakable_by_hand = 3,was_component=1},
+	on_punch = function(pos, node, player, pointed_thing)
+		local name=player:get_player_name() or ""
+		if minetest.get_meta(pos):get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
+			minetest.swap_node(pos,{name="was:computer"})
+		end
+	end,
+	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		minetest.registered_nodes["was:computer"].on_rightclick(pos, node, player, itemstack, pointed_thing)
+	end,
+	can_dig = function(pos, player)
+		return minetest.registered_nodes["was:computer"].can_dig(pos, player)
+	end,
+})
+
 minetest.register_node("was:computer", {
 	description = "Computer",
-	tiles = {"default_steel_block.png"},
+	tiles = {
+		"was_pc_board.png",
+		"was_pc_outside.png",
+		"was_pc_screen.png",
+		"was_pc_outside.png",
+		"was_pc_outside.png",
+		"was_pc_screen.png",
+	},
+	drawtype="nodebox",
+	paramtype = "light",
+	paramtype2="facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5, -0.5, -0.3, 0.5, -0.43, 0.5},
+			{-0.5, -0.5, 0.48, 0.5, 0.3, 0.5},
+		}
+	},
 	groups = {oddly_breakable_by_hand = 3,was_component=1},
+	on_punch = function(pos, node, player, pointed_thing)
+		minetest.swap_node(pos,{name="was:computer_closed"})
+	end,
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		meta:set_string("owner",placer:get_player_name() or "")
 		meta:get_inventory():set_size("storage", 50)
+		minetest.swap_node(pos,"was:computer_closed")
 	end,
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
 		local meta=minetest.get_meta(pos)
@@ -44,11 +94,10 @@ minetest.register_node("was:computer", {
 			if meta:get_string("owner")=="" then
 				return
 			end
-			local text=minetest.deserialize(meta:get_string("text"))
-			was.gui(name,"",{text=text})
-			if was.user[name] and not was.user[name].nodepos then
-				was.user[name].nodepos=pos
-			end
+			minetest.swap_node(pos,{name="was:computer"})
+			was.new_user(name,{nodepos=pos,show_print=true})
+			was.user[name].text=minetest.deserialize(meta:get_string("text"))
+			was.gui(name)
 		end
 	end,
 	can_dig = function(pos, player)
