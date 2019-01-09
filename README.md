@@ -6,7 +6,7 @@ in game programing, not in lua
 
 ---
 
-#### =====DATA TYPES===== 
+### =====DATA TYPES===== 
 bool		true	false  
 number		0	123.456	-5
 string		"asd 134"  
@@ -14,7 +14,7 @@ var		string	number	function	var	bool
 function	pos(1 2 a)  
 symbol		! (nil) ? (username)  
 
-#### =====VARIABLE=====  
+### =====VARIABLE=====  
 a variable can only be set to 1 thing at time  
 
 varname		a variable  
@@ -30,20 +30,23 @@ a !=		a = nil (used becaouse you can't set a=nnll )
 note the character "-" can mess if it is written together another symbol
 
 **add a node, could be**
+```lua
 node.add(pos( -1 2 34) "default:dirt")
-
+```
 **and...**
+```lua
 c = 34
 a = pos(1 2 c)
 dirt="default:dirt"
 node.add(a dirt)
-
-#### ========IF=======
-
+```
+### ========IF=======
+```lua
 if(a==b)  
 	..code..  
 endif  
-
+```
+```lua
 if(1=="asd" or a~=b and 87.3>=c nor a<=3 not "aasd"==!)  
 	..code..  
 elseif(b==!)  
@@ -53,9 +56,18 @@ elseif(b~=a not c<b)
 else  
 	..code..  
 endif  
+```
+### ========FOR=LOOP=======
+```lua
+start = 3
+end = 100
+for(start end)
+ ..code...
+ next
+ ```
 
-#### ========REGISTRY=FUNCTIONS=======
-
+### ========REGISTRY=FUNCTIONS=======
+```lua
 was.register_function("name"{  
 	info="",			--function description  
 	privs={},			--required privileges, eg (kick=true,server=true)  
@@ -63,22 +75,24 @@ was.register_function("name"{
 		return result  
 	end  
 })  
+```
+```lua
 was.register_function("name"{  
 	packed=true,		--inputs all args as table + usedata  
 	action=function(args)  
 		return result  
 	end  
 })  
-
-#### ========REGISTRY=SYMBOLS=======  
+```
+### ========REGISTRY=SYMBOLS=======  
 a symbol are called while calling a function or setting a var  
-
+```lua
 was.register_symbol("#",function(),"info"  
 		return result  
 	end  
 })  
-
-#### ========USERDATA=======
+```
+### ========USERDATA=======
 
 The user's information are stored in the global variable "was.userdata"  
 but is only able while the function / variables are active.  
