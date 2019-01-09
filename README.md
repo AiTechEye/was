@@ -107,7 +107,7 @@ was.register_function("name"{
 ```
 ```lua
 was.register_function("name"{  
-	packed=true,		--inputs all args as table + usedata  
+	packed=true,		--inputs all args as table
 	action=function(args)  
 		return result  
 	end  
@@ -139,12 +139,12 @@ was.register_symbol("#",function(),"info"
 The user's information are stored in the global variable "was.userdata"  
 but is only able while the function / variables are active.  
 
-was.iuserdata(index)	--return indexed active data  
-was.ilastuserdata()		--return last index  
-
-was.userdata.data		--the active line  
-was.userdata.index		--index of active line  
-was.userdata.function_name	--name of active function  
-was.userdata.name		--user's name  
-was.userdata.var		--all active variabbles  
+|variable / function| description|
+|was.iuserdata(index)		|return indexed active data|
+|was.ilastuserdata()		|return last index|
+|was.userdata.data		|the active line|
+|was.userdata.index		|index of active line|
+|was.userdata.function_name	|name of active function|
+|was.userdata.name		|user's name|
+|was.userdata.var		|all active variabbles|
 </details>
