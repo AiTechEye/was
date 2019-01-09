@@ -26,10 +26,18 @@ a -= 7.8	sub 7.8
 a *= 98		multiply
 a /= 2		divide
 a !=		a = nil (used becaouse you can't set a=nnll )
+note the character "-" can mess if it is written together another symbol
 
+#### add a node, could be
+node.add(pos( -1 2 34) "default:dirt")
 
+#### and...
+c = 34
+a = pos(1 2 c)
+dirt="default:dirt"
+node.add(a dirt)
 
-========IF=======
+## ========IF=======
 
 if(a==b)  
 	..code..  
