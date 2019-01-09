@@ -16,20 +16,21 @@ in game programing, not in lua
 |function	|pos(1 2 a)  
 |symbol		|! |(nil) |? |(username)  
 
-### =====VARIABLE=====  
-a variable can only be set to 1 thing at time  
+### =====VARIABLES=====  
+a variable can only be set to 1 thing at time
 
-varname		a variable  
-varname =	set variable value  
-example_var =	"string" 123.54 false var function() symbol  
-global varname		stored in user memory 
-varname = anothervar	set to another var
-
-a += 5		add 5 if   
-a -= 7.8	sub 7.8
-a *= 98		multiply
-a /= 2		divide
-a !=		a = nil (used becaouse you can't set a=nnll )
+|example        |-|-|-|-|-|-|
+|---------------|-|-|-|-|-|-|
+|varname	|a variable|
+|var_aa =	|set variable value|
+|another_var =	|"string"| 123.54| false |var |function()| symbol|
+|global varname	|stored in user memory|
+|vara = varb	|set to another var|
+|a += 5		|add 5
+|a -= 7.8	|sub 7.8
+|a *= 98	|multiply
+|a /= 2		|divide
+|a !=		|a = nil (used becaouse you can't set a=nnll )
 note the character "-" can mess if it is written together another symbol
 
 **add a node, could be**
