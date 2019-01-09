@@ -1,31 +1,11 @@
 was={
 	functions={},
 	function_packed={},
-	info={
-		["!"]="Empty value",
-		["=="]="Equal (only used with if)",
-		["~="]="Equal (only used with if)",
-		[">"]="Greater then (only used with if)",
-		["<"]="Less then (only used with if)",
-		[">="]="Greater or equal (only used with if)",
-		["<="]="Less or equal (only used with if)",
-	},
+	info={},
 	privs={},
 	user={},
 	userdata={},
-	symbols={
-		["!"]=function()
-			if was.userdata.function_name=="if" then
-				return "!"
-			end
-		end,
-		[">"]=function() return ">" end,
-		["<"]=function() return "<" end,
-		["=="]=function() return "==" end,
-		["~="]=function() return "~=" end,
-		[">="]=function() return ">=" end,
-		["<="]=function() return "<=" end,
-	},
+	symbols={},
 	symbols_characters="#@=?!&{}%*+-/$<>|~^",
 }
 

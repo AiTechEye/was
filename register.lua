@@ -3,12 +3,17 @@
 ================= SYMBOLS =================
 --]]
 
-was.register_symbol("?",
-	function()
-		return was.userdata.name
-	end,
-	"return username"
-)
+was.register_symbol("?",function() return was.userdata.name end,"return username")
+was.register_symbol("!", function() if was.userdata.function_name~="if" then was.userdata.error=" ! only able in if state" end end,"Empty value")
+was.register_symbol(">", function() if was.userdata.function_name~="if" then was.userdata.error=" > only able in if state" end end,"Greater then (only used with if)" )
+was.register_symbol("<", function() if was.userdata.function_name~="if" then was.userdata.error=" < only able in if state" end end,"Less then (only used with if)" )
+was.register_symbol("<=", function() if was.userdata.function_name~="if" then was.userdata.error=" <= only able in if state" end end,"Less or equal (only used with if)" )
+was.register_symbol(">=", function() if was.userdata.function_name~="if" then was.userdata.error=" >= only able in if state" end end,"Greater or equal (only used with if)" )
+was.register_symbol("==", function() if was.userdata.function_name~="if" then was.userdata.error=" == only able in if state" end end,"Equal (only used with if)" )
+was.register_symbol("~=", function() if was.userdata.function_name~="if" then was.userdata.error=" > only able in if state" end end,"Equal (only used with if)" )
+was.register_symbol("!=",function() end, "var = nothing")
+was.register_symbol("--",function() end, "Comment")
+was.register_symbol("-",function() end, "Minus")
 
 was.register_symbol("+=",function()
 		local i=was.userdata.index
@@ -28,7 +33,6 @@ was.register_symbol("-=",function()
 	"var - n"
 )
 
-
 was.register_symbol("*=",function()
 		local i=was.userdata.index
 		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
@@ -38,7 +42,6 @@ was.register_symbol("*=",function()
 	"var * n"
 )
 
-
 was.register_symbol("/=",function()
 		local i=was.userdata.index
 		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
@@ -46,20 +49,6 @@ was.register_symbol("/=",function()
 		end
 	end,
 	"var / n"
-)
-
-was.register_symbol("%=",function()
-		local i=was.userdata.index
-		if was.is_number(was.iuserdata(i-1)) and was.is_number(was.iuserdata(i+1)) then
-			return was.iuserdata(i-1) % was.iuserdata(i+1)
-		end
-	end,
-	"var % n"
-)
-
-was.register_symbol("!=",function()
-	end,
-	"var = nothing"
 )
 
 --[[
@@ -88,12 +77,12 @@ was.register_function("math.pi",{
 })
 
 was.register_function("math",{
-	info="Math + - * % ^ /  ('-' 1 2 67...)",
+	info="Math + - * ^ /  ('-' 1 2 67...)",
 	packed=true,
 	action=function(a)
 		local c=a[1]
 		local n=a[2]
-		if not (was.is_string(c) and c:len()==1 and string.find("%^+-*/",c)) then
+		if not (was.is_string(c) and c:len()==1 and string.find("^+-*/",c)) then
 			return
 		end
 
@@ -109,8 +98,6 @@ was.register_function("math",{
 					n=n/a[i]
 				elseif c=="^" then
 					n=n^a[i]
-				elseif c=="%" then
-					n=n%a[i]
 				end
 			end
 		end
@@ -344,7 +331,7 @@ was.register_function("nodetimer.start",{
 		local u=was.user[was.userdata.name]
 		if was.protected(pos) then
 			return
-		elseif not pos and n and u.nodepos and was.is_number(n) then
+		elseif not pos and n and u and u.nodepos and was.is_number(n) then
 			minetest.get_node_timer(u.nodepos):start(n)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_number(n) and was.is_pos(pos) then
 			minetest.get_node_timer(pos):start(n)
@@ -360,7 +347,7 @@ was.register_function("nodetimer.stop",{
 		local u=was.user[was.userdata.name]
 		if was.protected(pos) then
 			return
-		elseif not pos and n and u.nodepos then
+		elseif not pos and n and u and u.nodepos then
 			minetest.get_node_timer(u.nodepos):stop()
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			minetest.get_node_timer(pos):stop()
@@ -378,7 +365,7 @@ was.register_function("mesecon.on",{
 		local u=was.user[was.userdata.name]
 		if was.protected(pos) then
 			return
-		elseif not pos and n and u.nodepos then
+		elseif not pos and n and u and u.nodepos then
 			mesecon.receptor_on(u.nodepos)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			mesecon.receptor_on(pos)
@@ -393,7 +380,7 @@ was.register_function("mesecon.off",{
 		local u=was.user[was.userdata.name]
 		if was.protected(pos) then
 			return
-		elseif not pos and n and u.nodepos then
+		elseif not pos and n and u and u.nodepos then
 			mesecon.receptor_off(u.nodepos)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			mesecon.receptor_off(pos)
@@ -406,9 +393,10 @@ was.register_function("mesecon.send",{
 	info="Send a mesecon signal (nothing or pos) to effect another node requires was privilege ",
 	action=function(pos)
 		local u=was.user[was.userdata.name]
+
 		if was.protected(pos) then
 			return
-		elseif not pos and n and u.nodepos then
+		elseif not pos and n and u and u.nodepos then
 			local p=u.nodepos
 			mesecon.receptor_on(p)
 			minetest.after(1, function(p)

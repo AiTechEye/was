@@ -76,6 +76,7 @@ was.compiler=function(input_text,user)
 	input_text=input_text:gsub("%)"," } ")
 	input_text=input_text:gsub("%[","")
 	input_text=input_text:gsub("%]","")
+	input_text=input_text:gsub("%%","")
 
 	local c
 	local data={}
@@ -199,13 +200,19 @@ was.compiler=function(input_text,user)
 --)				
 				func=nil
 				data[ii].type="bracket end"
+			elseif data[ii].type=="symbol" then
+--symbol
+				if not was.symbols[data[ii].content] then
+					return 'ERROR line '.. i ..': "' .. data[ii].content ..'" unknown symbol'
+				elseif data[ii].content=="--" then
+					ii=#v
+				end
 			elseif data[ii].type=="var" and data[ii].content=="next" then
 				if nexts==0 then
 					return 'ERROR line '.. i ..': no "for" to return to'
 				end
 				nexts=0
 				data[ii].forstate=true
-
 			end
 			ii=ii+1
 		end
@@ -313,7 +320,9 @@ was.run=function(input,user)
 			was.userdata.index=i
 			was.userdata.var=VAR
 
-			if v[i].forstate then
+			if was.userdata.error then
+				return 'ERROR line '.. index ..': ' .. was.userdata.error
+			elseif v[i].forstate then
 				if v[i].content=="next" then
 
 					if forstate.i<forstate.e then
