@@ -1,5 +1,6 @@
 was={
 	functions={},
+	function_list={},
 	function_packed={},
 	info={},
 	privs={},
@@ -12,7 +13,6 @@ was={
 dofile(minetest.get_modpath("was") .. "/api.lua")
 dofile(minetest.get_modpath("was") .. "/register.lua")
 dofile(minetest.get_modpath("was") .. "/gui.lua")
-
 
 --minetest.register_chatcommand("was", {
 --	description = "World action script gui",

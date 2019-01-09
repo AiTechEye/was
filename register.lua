@@ -355,7 +355,7 @@ was.register_function("nodetimer.stop",{
 	end
 })
 --[[
-================= PLAYER =================
+================= MESECONS =================
 --]]
 if minetest.get_modpath("mesecons") then
 was.register_function("mesecon.on",{
@@ -439,6 +439,41 @@ was.register_function("player.get_pos",{
 		end
 	end
 })
+
+--[[
+================= ENTIY =================
+--]]
+
+was.register_function("entity.spawn_item",{
+	info="Spawn item (pos name)",
+	action=function(pos,name)
+		if was.is_pos(pos) and was.is_string(name) and minetest.registered_items[name] then
+			local inv=minetest.get_meta(was.user[was.userdata.name].nodepos):get_inventory()
+			if not inv:contains_item("storage",name) then
+				return
+			end
+			inv:remove_item("storage",name)
+			minetest.add_item(pos,name)
+		end
+		local p=minetest.get_player_by_name(name)
+	end
+})
+
+was.register_function("entity.remove_item",{
+	info="Remove item (pos)",
+	action=function(pos)
+		if was.is_pos(pos) and not was.protected(pos) then
+			for _, ob in ipairs(minetest.get_objects_inside_radius(pos, 1)) do
+				local en=ob:get_luaentity()
+				if en and en.name=="__builtin:item" then
+					minetest.get_meta(was.user[was.userdata.name].nodepos):get_inventory():add_item("storage",en.itemstring)
+					en.object:remove()
+				end
+			end
+		end
+	end
+})
+
 
 --[[
 ================= MISC =================

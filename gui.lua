@@ -1,3 +1,10 @@
+minetest.after(1, function()
+	for f,v in pairs(was.functions) do
+		table.insert(was.function_list,f)
+	end
+	table.sort(was.function_list,function(a,b) return a < b end)
+end)
+
 was.gui_addnumbers=function(text)
 	text=text.."\n"
 	for i=1,text:len(),1 do
@@ -39,7 +46,6 @@ was.gui=function(name,msg,other)
 
 	was.user[name]=was.user[name] or {
 		text=(other and other.text or ""),
-		funcs={},
 		inserttext="true",
 		lines="off",
 		bg="true",
@@ -62,10 +68,9 @@ was.gui=function(name,msg,other)
 		symbs=symbs .. f ..","
 	end
 
-	for f,v in pairs(was.functions) do
-		if minetest.check_player_privs(name,was.privs[f]) then 
-			funcs=funcs .. f ..","
-			table.insert(was.user[name].funcs,f)
+	for _,v in pairs(was.function_list) do
+		if minetest.check_player_privs(name,was.privs[v]) then 
+			funcs=funcs .. v ..","
 		end
 	end
 
@@ -127,8 +132,6 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			return
 		end
 
-		local funcs=was.user[name].funcs
-		was.user[name].funcs={}
 		was.user[name].text=pressed.text
 
 		if was.user[name].text:find("%[") or was.user[name].text:find("%]") then
@@ -165,7 +168,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 
 		if pressed.list and pressed.list~="IMV" then
 			local n=pressed.list:gsub("CHG:","")
-			local f=funcs[tonumber(n)]
+			local f=was.function_list[tonumber(n)]
 			local info=was.info[f] or ""
 			if was.privs[f] then
 				info=info .. "| Privs: " ..minetest.privs_to_string(was.privs[f])
