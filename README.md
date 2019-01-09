@@ -6,7 +6,10 @@ in game programing, not in lua
 
 ---
 
-### =====DATA TYPES===== 
+
+
+<details><summary>DATA TYPES</summary>
+	
 |Type|examples|examples|examples|examples|
 |---------------|-----------|-|-|-|
 |bool		|true	|false
@@ -15,8 +18,9 @@ in game programing, not in lua
 |var		|string	|number	|function	|var	|bool  
 |function	|pos(1 2 a)  
 |symbol		|! |(nil) |? |(username)  
+</details>
 
-### =====VARIABLES=====  
+<details><summary>VARIABLES</summary>
 a variable can only be set to 1 thing at time
 
 |example        |-|-|-|-|-|-|
@@ -31,6 +35,7 @@ a variable can only be set to 1 thing at time
 |a *= 98	|multiply
 |a /= 2		|divide
 |a !=		|a = nil (used becaouse you can't set a=nnll )
+
 note the character "-" can mess if it is written together another symbol
 
 **add a node, could be**
@@ -44,7 +49,13 @@ a = pos(1 2 c)
 dirt="default:dirt"
 node.add(a dirt)
 ```
-### ========IF=======
+</details>
+
+
+
+
+<details><summary>IF</summary>
+
 ```lua
 if(a==b)  
 	..code..  
@@ -61,7 +72,14 @@ else
 	..code..  
 endif  
 ```
-### ========FOR=LOOP=======
+</details>
+
+
+
+
+
+<details><summary>FOR LOOP</summary>
+
 ```lua
 start = 3
 end = 100
@@ -69,8 +87,14 @@ for(start end)
  ..code...
  next
  ```
+</details>
 
-### ========REGISTRY=FUNCTIONS=======
+
+
+
+
+<details><summary>REGISTRY FUNCTIONS</summary>
+
 ```lua
 was.register_function("name"{  
 	info="",			--function description  
@@ -88,7 +112,14 @@ was.register_function("name"{
 	end  
 })  
 ```
-### ========REGISTRY=SYMBOLS=======  
+</details>
+
+
+
+
+
+<details><summary>REGISTRY SYMBOLS</summary>
+
 a symbol are called while calling a function or setting a var  
 ```lua
 was.register_symbol("#",function(),"info"  
@@ -96,7 +127,13 @@ was.register_symbol("#",function(),"info"
 	end  
 })  
 ```
-### ========USERDATA=======
+</details>
+
+
+
+
+
+<details><summary>USERDATA</summary>
 
 The user's information are stored in the global variable "was.userdata"  
 but is only able while the function / variables are active.  
@@ -109,3 +146,4 @@ was.userdata.index		--index of active line
 was.userdata.function_name	--name of active function  
 was.userdata.name		--user's name  
 was.userdata.var		--all active variabbles  
+</details>
