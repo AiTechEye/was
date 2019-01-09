@@ -148,4 +148,5 @@ but is only able while the function / variables are active.
 |was.userdata.function_name	|name of active function|
 |was.userdata.name		|user's name|
 |was.userdata.var		|all active variabbles|
+|was.userdata.error		|crach and send text message|
 </details>
