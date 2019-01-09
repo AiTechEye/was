@@ -30,6 +30,7 @@ minetest.register_privilege("was", {
 
 minetest.register_node("was:computer_closed", {
 	description = "Computer",
+	drop="was:computer",
 	tiles = {
 		"was_pc_outside.png",
 	},
@@ -46,7 +47,7 @@ minetest.register_node("was:computer_closed", {
 	on_punch = function(pos, node, player, pointed_thing)
 		local name=player:get_player_name() or ""
 		if minetest.get_meta(pos):get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
-			minetest.swap_node(pos,{name="was:computer"})
+			minetest.swap_node(pos,{name="was:computer",param2=node.param2})
 		end
 	end,
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
@@ -79,13 +80,13 @@ minetest.register_node("was:computer", {
 	},
 	groups = {oddly_breakable_by_hand = 3,was_component=1},
 	on_punch = function(pos, node, player, pointed_thing)
-		minetest.swap_node(pos,{name="was:computer_closed"})
+		minetest.swap_node(pos,{name="was:computer_closed",param2=node.param2})
 	end,
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		meta:set_string("owner",placer:get_player_name() or "")
 		meta:get_inventory():set_size("storage", 50)
-		minetest.swap_node(pos,"was:computer_closed")
+		minetest.swap_node(pos,{name="was:computer_closed",param2=minetest.get_node(pos).param2})
 	end,
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
 		local meta=minetest.get_meta(pos)
@@ -94,7 +95,7 @@ minetest.register_node("was:computer", {
 			if meta:get_string("owner")=="" then
 				return
 			end
-			minetest.swap_node(pos,{name="was:computer"})
+			minetest.swap_node(pos,{name="was:computer",param2=node.param2})
 			was.new_user(name,{nodepos=pos,show_print=true})
 			was.user[name].text=minetest.deserialize(meta:get_string("text"))
 			was.gui(name)
