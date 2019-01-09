@@ -81,12 +81,13 @@ endif
 <details><summary>FOR LOOP</summary>
 
 ```lua
-start = 3
-end = 100
-for(start end)
+start_n = 3
+end_n = 100
+for(start_n end_n)
  ..code...
  next
  ```
+ max loops is 1000, dont use negative values
 </details>
 
 
