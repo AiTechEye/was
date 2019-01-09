@@ -7,7 +7,7 @@ in game programing, not in lua
 
 =====DATA TYPES=====  
 bool		true	false  
-number		0	123.456  
+number		0	123.456	-5
 string		"asd 134"  
 var		string	number	function	var	bool  
 function		pos(1 2 a)  
@@ -19,7 +19,15 @@ a variable can only be set to 1 thing at time
 varname		a variable  
 varname =	set variable value  
 example_var =	"string" 123.54 false var function() symbol  
-global var		stored in tempoary user memory  
+global varname		stored in user memory  
+
+a += 5		add 5 if   
+a -= 7.8	sub 7.8
+a *= 98		multiply
+a /= 2		divide
+a !=		a = nil (used becaouse you can't set a=nnll )
+
+
 
 ========IF=======
 
