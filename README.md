@@ -31,10 +31,10 @@ a variable can only be set to 1 thing at time
 |global varname	|stored in user memory|
 |vara = varb	|set to another var|
 |a += 5		|add 5
-|a -= 7.8	|sub 7.8
+|a -= 4		|sub 4
 |a *= 98	|multiply
 |a /= 2		|divide
-|a !=		|a = nil (used becaouse you can't set a=nnll )
+|a !=		|a = nil (used becaouse you can't set a=nll )
 
 note the character "-" can mess if it is written together another symbol
 
