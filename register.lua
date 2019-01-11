@@ -235,8 +235,8 @@ was.register_function("node.add",{
 			if n and n.buildable_to==false then
 				return
 			end
-			if was.nodepos then
-				local inv=minetest.get_meta(was.nodepos):get_inventory()
+			if was.nodepos() then
+				local inv=minetest.get_meta(was.nodepos()):get_inventory()
 				if not inv:contains_item("storage",name) then
 					return
 				end
@@ -251,13 +251,13 @@ was.register_function("node.remove",{
 	info="remove node (pos)",
 	action=function(pos)
 		if was.is_pos(pos) and not minetest.is_protected(pos,was.userdata.name) then
-			if was.nodepos then
+			if was.nodepos() then
 				local n=minetest.registered_nodes[minetest.get_node(pos).name]
 				local player=minetest.get_player_by_name(was.userdata.name)
 				if n and ((n.can_dig and player and n.can_dig(pos, player)==false) or (n.pointable==false) or n.drop=="") then
 					return
 				end
-				minetest.get_meta(was.nodepos):get_inventory():add_item("storage",minetest.get_node(pos).name)
+				minetest.get_meta(was.nodepos()):get_inventory():add_item("storage",minetest.get_node(pos).name)
 			end
 			minetest.remove_node(pos)	
 		end
@@ -330,8 +330,8 @@ was.register_function("nodetimer.start",{
 	action=function(n,pos)
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos and was.is_number(n) then
-			minetest.get_node_timer(was.nodepos):start(n)
+		elseif not pos and was.nodepos() and was.is_number(n) then
+			minetest.get_node_timer(was.nodepos()):start(n)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_number(n) and was.is_pos(pos) then
 			minetest.get_node_timer(pos):start(n)
 		end
@@ -345,8 +345,8 @@ was.register_function("nodetimer.stop",{
 	action=function(pos)
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos then
-			minetest.get_node_timer(was.nodepos):stop()
+		elseif not pos and was.nodepos() then
+			minetest.get_node_timer(was.nodepos()):stop()
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			minetest.get_node_timer(pos):stop()
 		end
@@ -363,8 +363,8 @@ was.register_function("mesecon.on",{
 		
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos then
-			mesecon.receptor_on(was.nodepos)
+		elseif not pos and was.nodepos() then
+			mesecon.receptor_on(was.nodepos())
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			mesecon.receptor_on(pos)
 		end
@@ -378,8 +378,8 @@ was.register_function("mesecon.off",{
 		
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos then
-			mesecon.receptor_off(was.nodepos)
+		elseif not pos and was.nodepos() then
+			mesecon.receptor_off(was.nodepos())
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			mesecon.receptor_off(pos)
 		end
@@ -392,8 +392,8 @@ was.register_function("mesecon.send",{
 	action=function(pos)
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos then
-			local p=was.nodepos
+		elseif not pos and was.nodepos() then
+			local p=was.nodepos()
 			mesecon.receptor_on(p)
 			minetest.after(1, function(p)
 				mesecon.receptor_off(p)
@@ -444,7 +444,7 @@ was.register_function("entity.spawn_item",{
 	info="Spawn item (pos name)",
 	action=function(pos,name)
 		if was.is_pos(pos) and was.is_string(name) and minetest.registered_items[name] then
-			local inv=minetest.get_meta(was.nodepos):get_inventory()
+			local inv=minetest.get_meta(was.nodepos()):get_inventory()
 			if not inv:contains_item("storage",name) then
 				return
 			end
@@ -462,7 +462,7 @@ was.register_function("entity.remove_item",{
 			for _, ob in ipairs(minetest.get_objects_inside_radius(pos, 1)) do
 				local en=ob:get_luaentity()
 				if en and en.name=="__builtin:item" then
-					minetest.get_meta(was.nodepos):get_inventory():add_item("storage",en.itemstring)
+					minetest.get_meta(was.nodepos()):get_inventory():add_item("storage",en.itemstring)
 					en.object:remove()
 				end
 			end
