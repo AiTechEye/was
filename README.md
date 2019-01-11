@@ -5,7 +5,7 @@ Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 in game programing, not in lua
 
 
-# lots of necessary changes are on the go, so dont use this is yet, only testing / have fun
+# lots of necessary changes are on the go, so dont use this is yet in projects, only testing / have fun
 
 ---
 
