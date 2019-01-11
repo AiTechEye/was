@@ -7,11 +7,11 @@ in game programing, not in lua
 
 # lots of necessary changes are on the go, so dont use this is in projects yet, only testing / have fun
 progress:
-[x] make procceses local
+[ x ] make procceses local
 [ ] digiline support
-[x] use own wire
-[x] mesecons support
-[x] pipeworks support
+[ x ] use own wire
+[ x ] mesecons support
+[ x ] pipeworks support
 [ ] make sure everything works
 [ ] make event system works
 
