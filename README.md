@@ -4,6 +4,9 @@ Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 
 in game programing, not in lua
 
+
+# lots of necessary changes are on the go, so dont use this is yet, only testing / have fun
+
 ---
 
 
@@ -28,7 +31,6 @@ a variable can only be set to 1 thing at time
 |varname	|a variable|
 |var_aa =	|set variable value|
 |another_var =	|"string"| 123.54| false |var |function()| symbol|
-|global varname	|stored in user memory|
 |vara = varb	|set to another var|
 |a += 5		|add 5
 |a -= 4		|sub 4
