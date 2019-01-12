@@ -8,14 +8,8 @@ in game programing, not in lua
 # more necessary changes are on the go, so dont use this is in projects yet, only testing
 progress:
 
-[x] make procceses local  
-[x] digiline support  
-[x] use own wire  
-[x] mesecons support  
-[x] pipeworks support  
-[ ] make sure everything works  
-[40%] add/change tables, eg a.b =   or a.b.c.d="string" etc...  
-[50%] make event system works  
+[ ] save / auto storage variable
+
 
 
 ---
