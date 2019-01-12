@@ -20,14 +20,14 @@ progress:
 
 <details><summary>DATA TYPES</summary>
 	
-|Type|examples|examples|examples|examples|
+|Type|examples|examples|examples|examples|examples|
 |---------------|-----------|-|-|-|
 |bool		|true	|false
 |number		|0	|123.456	|-5
 |string		|"asd 134"  
-|var		|string	|number	|function	|var	|bool  
+|var		|string	|number	|function	|var	|booltable|  
 |function	|pos(1 2 a)  
-|symbol		|! |(nil) |? |(username)  
+|symbol		|! |(nil) |? (username)|  
 </details>
 
 <details><summary>VARIABLES</summary>
@@ -39,6 +39,7 @@ a variable can only be set to 1 thing at time
 |var_aa =	|set variable value|
 |another_var =	|"string"| 123.54| false |var |function()| symbol|
 |vara = varb	|set to another var|
+|vara.b =	|set as table (no limit for sub variables/tables)|
 |a += 5		|add 5
 |a -= 4		|sub 4
 |a *= 98	|multiply
