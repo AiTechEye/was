@@ -5,7 +5,9 @@ Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 in game programing, not in lua
 
 
-# more necessary changes are on the go, so dont use this is in projects yet, only testing
+# dont use this in public servers yet, it need to be practical tested first.
+
+
 progress:
 
 [ ] save / auto storage variable
