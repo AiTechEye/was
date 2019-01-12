@@ -21,11 +21,11 @@ progress:
 <details><summary>DATA TYPES</summary>
 	
 |Type|examples|examples|examples|examples|examples|
-|---------------|-----------|-|-|-|
+|---------------|-----------|-|-|-|-|
 |bool		|true	|false
 |number		|0	|123.456	|-5
 |string		|"asd 134"  
-|var		|string	|number	|function	|var	|booltable|  
+|var		|string	|number	|function	|var	|bool|table|  
 |function	|pos(1 2 a)  
 |symbol		|! |(nil) |? (username)|  
 </details>
