@@ -5,7 +5,7 @@ Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 in game programing, not in lua
 
 
-# lots of necessary changes are on the go, so dont use this is in projects yet, only testing / have fun
+# more necessary changes are on the go, so dont use this is in projects yet, only testing
 progress:
 
 [x] make procceses local  
