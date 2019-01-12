@@ -14,7 +14,7 @@ progress:
 [x] mesecons support  
 [x] pipeworks support  
 [x] make sure everything works  
-[ ] add/change tables, eg a.b = 
+[ ] add/change tables, eg a.b =  
 [50%] make event system works  
 
 
