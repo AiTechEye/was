@@ -13,7 +13,7 @@ progress:
 [x] use own wire  
 [x] mesecons support  
 [x] pipeworks support  
-[ ] make sure everything works  
+[x] make sure everything works  
 [ ] make event system works  
 
 
