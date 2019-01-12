@@ -531,6 +531,7 @@ was.register_function("if",{
 			arg[i+1]=nil
 		end
 
+
 		if a=="==" then
 			table.insert(logic,(arg[i-1] == arg[i+1]))
 			li=li+1
@@ -574,6 +575,9 @@ was.register_function("if",{
 
 		i=i+2
 		end
+
+
+
 		if li<2 then
 			return logic[li]==true
 		else
@@ -585,43 +589,42 @@ was.register_function("if",{
 was.register_function("print",{
 	packed=true,
 	action=function(a)
-		if not was.userdata.print or not was.user[was.userdata.name] or was.userdata.id~=was.user[was.userdata.name].id then
-		elseif was.user[was.userdata.name] then
+		if was.userdata.print then
 			local ud=was.user[was.userdata.name]
-			local s=""
-			for i,v in ipairs(a) do
-				if was.is_string(v) or was.is_number(v) then
-					s=s .. v .. " "
-				elseif was.is_table(v) then
-					s=s .. "table "
-				elseif type(v)=="boolean" then
-					if v==true then
-						s=s .."true "
+			if ud and was.userdata.id==ud.id then
+				local s=""
+				for i,v in pairs(a) do
+					if was.is_string(v) or was.is_number(v) then
+						s=s .. v .. " "
+					elseif was.is_table(v) then
+						s=s .. "table "
+					elseif type(v)=="boolean" then
+						if v==true then
+							s=s .."true "
+						else
+							s=s .."false "
+						end
 					else
-						s=s .."false "
+						s=s .."!"
 					end
-				else
-					s=s .."!"
 				end
+				if s:len()>60 then
+					s=s:sub(0,60)
+				end
+				if s:len()>30 then
+					s=s:sub(0,30) .."\n" .. s:sub(31,s:len())
+				end
+				ud.console_text=ud.console_text or ""
+				ud.console_lines=(ud.console_lines and (ud.console_lines+1)) or 1
+				ud.console_text=ud.console_text .. s .. "\n"
+				ud.console="true"
+				if ud.console_lines>27 then
+					ud.console_text=ud.console_text:sub(ud.console_text:find("\n")+1,ud.console_text:len())
+					ud.console_lines=27
+				end
+			elseif minetest.check_player_privs(was.userdata.name,{server=true}) then
+				print(unpack(a))
 			end
-
-			if s:len()>60 then
-				s=s:sub(0,60)
-			end
-			if s:len()>30 then
-				s=s:sub(0,30) .."\n" .. s:sub(31,s:len())
-			end
-			ud.console_text=ud.console_text or ""
-			ud.console_lines=(ud.console_lines and (ud.console_lines+1)) or 1
-			ud.console_text=ud.console_text .. s .. "\n"
-			ud.console="true"
-			if ud.console_lines>27 then
-				ud.console_text=ud.console_text:sub(ud.console_text:find("\n")+1,ud.console_text:len())
-				ud.console_lines=27
-			end
-			was.gui(was.userdata.name)
-		elseif minetest.check_player_privs(was.userdata.name,{server=true}) then
-			print(unpack(a))
 		end
 	end
 })
