@@ -427,10 +427,9 @@ was.register_function("player.msg",{
 	privs={shout=true},
 	info="Message to player (playername text)",
 	action=function(name,msg)
-		if not (was.is_string(name) and was.is_string(msg)) then
-			return
+		if was.is_string(name) and (was.is_string(msg) or was.is_number(msg)) then
+			minetest.chat_send_player(name, "<" .. was.userdata.name .."> " .. msg)
 		end
-		minetest.chat_send_player(name, "<" .. was.userdata.name .."> " .. msg)
 	end
 })
 

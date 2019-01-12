@@ -193,6 +193,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 				meta:set_string("channel",pressed.channel)
 				was.user[name].channel=pressed.channel
 				was.gui(name,"Text saved successful")
+				return
 			end
 		elseif pressed.pupos and pressed.key_enter then
 			if pressed.pupos=="" then
@@ -208,7 +209,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 				user=name,
 				pos=was.user[name].nodepos,
 				print=true,
-				event={event="gui_run"}
+				event={type="gui_run"}
 			})
 			if msg then
 				was.user[name].text=was.gui_addnumbers(was.user[name].text)
@@ -218,6 +219,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			end
 
 			was.gui(name,msg)
+			return
 		end
 	end
 end)

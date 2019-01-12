@@ -111,7 +111,7 @@ was.compiler=function(input_text,def)
 		elseif ob.type=="" and chr then
 --var
 			ob.type="var"
-		elseif ob.type=="var" and not chr and c~="."  then
+		elseif ob.type=="var" and not chr  then -- and c~="."
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
 			i=i-1
@@ -143,6 +143,7 @@ was.compiler=function(input_text,def)
 --print(dump(output_data))
 	local ifends=0
 	local nexts=0
+	local VAR={}
 	for i,v in ipairs(output_data) do
 		local ii=1
 		data=v
@@ -171,9 +172,6 @@ was.compiler=function(input_text,def)
 				if data[ii].content=="end" then
 					ifends=ifends-1
 				end
---			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
---global var
---				data[ii+1].global=true
 			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="=" and not was.symbols[data[ii+1].content ..  data[ii+2].content] then
 --var =
 				if func then
@@ -211,28 +209,47 @@ was.compiler=function(input_text,def)
 				elseif data[ii].content=="--" then
 					ii=#v
 				end
---for next
 			elseif data[ii].type=="var" and data[ii].content=="next" then
+--for next
 				if nexts==0 then
 					return 'ERROR line '.. i ..': no "for" to return to'
 				end
 				nexts=0
 				data[ii].forstate=true
 
-			--elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="." and data[ii+2].type=="var" then
+			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="." and data[ii+2].type=="var" then
 --table
-			--	data[ii].table={}
-			--	data[ii].content=data[ii].content .. "." .. data[ii+2].content
-			--	table.remove(data,ii+1)
-			--	table.remove(data,ii+1)
-				--for ni=ii,#v 2 do
-				--	if data[ni].type=="var" and data[ni+1].content=="." then
-				--		data[ii].table[data[ni].content]=1
-				--		data[ii].content=data[ii].content .. "." .. data[ii+2].content
-				--		data[ni]=nil
-				--		ii=ii-1
-				--	end
-				--end
+				data[ii].table=data[ii+2].content
+				local vn=data[ii].content
+				local tab={}
+				tab[data[ii+2].content]={}
+				local t=tab[data[ii+2].content]
+				table.remove(data,ii+1)
+				table.remove(data,ii+1)
+				for ni=ii,#v,1 do
+					if data[ii+1] and data[ii+2] and data[ii+1].content=="." and data[ii+2].type=="var" then
+						data[ii].table=data[ii].table .. "." .. data[ii+2].content
+						t[data[ii+2].content]={}
+						t=t[data[ii+2].content]
+						table.remove(data,ii+1)
+						table.remove(data,ii+1)
+					else
+						break
+					end
+				end
+
+				if data[ii+1] and data[ii+1].content=="=" then
+					data[ii].type="set var"
+					table.remove(data,ii+1)
+				end
+--reset table, make able for function again
+				if data[ii+1] and data[ii+1].content=="{" then
+					data[ii].content=vn .."." .. data[ii].table
+					data[ii].table=nil
+					ii=ii-1
+				else
+					VAR[vn]=tab
+				end
 			end
 			ii=ii+1
 		end
@@ -259,9 +276,44 @@ was.compiler=function(input_text,def)
 	if nexts>0 then
 		return 'ERROR: Missing ' .. nexts .. ' for "next"'
 	end
+--print(dump(output_data2))
+	local msg=was.run(output_data2,def,VAR)
 
-	local msg=was.run(output_data2,def)
 	return msg
+end
+
+was.get_VAR=function(VAR,avar)
+	if avar.table then
+		local a=avar.table.split(avar.table,".")
+		local t=VAR[avar.content]
+		for i,v in ipairs(a) do
+			if t[v] then
+				t=t[v]
+			end
+		end
+		return t
+	else
+		return VAR[avar.content]
+	end
+end
+
+was.set_VAR=function(VAR,avar,value)
+	if avar.table then
+		local a=avar.table.split(avar.table,".")
+		local t=VAR[avar.content]
+		for i,v in ipairs(a) do
+			if a[i+1] then
+				t=t[v]
+			else
+				break
+			end
+		end
+		t[a[#a]]=value
+		return VAR
+	else
+		VAR[avar.content]=value -- VAR[nvar.content]
+		return VAR
+	end
 end
 
 was.run_function=function(func_name,data,VAR,i,ii)
@@ -285,7 +337,7 @@ was.run_function=function(func_name,data,VAR,i,ii)
 			was.userdata.index=i
 			table.insert(d, was.symbols[data[i].content]() or data[i].content)
 		elseif data[i].type=="var" then
-			table.insert(d,VAR[data[i].content] or func_name=="if" and "!") 
+			table.insert(d,was.get_VAR(VAR,data[i]) or func_name=="if" and "!") 
 		elseif data[i].type=="function" then
 			was.userdata.index=i
 			local re,newi=was.run_function(data[i].content,data,VAR,i+1,#data) 
@@ -305,13 +357,8 @@ was.run_function=function(func_name,data,VAR,i,ii)
 	end
 end
 
-was.run=function(input,def)
-	local VAR={}	--table.copy(was.user[user].global)
-
-	for i,n in pairs(def.event) do
-		VAR[i]=n
-	end
-
+was.run=function(input,def,VAR)
+	VAR.event=def.event
 	local state=0
 	local elsestate=0
 	local forstate
@@ -327,9 +374,8 @@ was.run=function(input,def)
 
 	local index=0
 	while index<#input do
-	index=index+1
-	local v=input[index]
-
+		index=index+1
+		local v=input[index]
 		local i=1
 		while i<=#v do
 
@@ -392,27 +438,22 @@ was.run=function(input,def)
 			elseif v[i].type=="set var" and v[i+1] then
 				local ndat=v[i+1]
 				if (ndat.type=="string" or ndat.type=="number" or ndat.type=="bool") then
-					VAR[v[i].content]=ndat.content
+					VAR=was.set_VAR(VAR,v[i],ndat.content)
 				elseif ndat.type=="symbol" and was.symbols[ndat.content] then
-					VAR[v[i].content]=was.symbols[ndat.content]()
+					VAR=was.set_VAR(VAR,v[i],was.symbols[ndat.content]())
 				elseif ndat.type=="var" and VAR[ndat.content] then
-					VAR[v[i].content]=VAR[ndat.content]
+					VAR=was.set_VAR(VAR,v[i],VAR[ndat.content])
 				elseif ndat.type=="function" and was.functions[ndat.content] then
-					VAR[v[i].content]=was.run_function(ndat.content,v,VAR,i+2,#v)
+					VAR=was.set_VAR(VAR,v[i],was.run_function(ndat.content,v,VAR,i+2,#v))
 				else
-					VAR[v[i].content]=nil
+					VAR=was.set_VAR(VAR,v[i],nil)
 				end
-
-			--	if v[i].global then
-			--		was.user[user].global[v[i].content]=VAR[v[i].content]
-			--	end
-
 				i=i+1
 			elseif v[i].type=="function" then
 				was.run_function(v[i].content,v,VAR,i+1,#v)
 				i=i+1
 			elseif v[i].type=="symbol" and was.symbols[v[i].content] and v[i-1] and v[i-1].type=="var" then
-				VAR[v[i-1].content]=was.symbols[v[i].content]()
+				VAR=was.set_VAR(VAR,v[i-1],was.symbols[v[i].content]())
 			end
 			i=i+1
 		end
