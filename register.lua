@@ -105,13 +105,6 @@ was.register_function("math",{
 	end
 })
 
-was.register_function("table",{
-	info="return empty table",
-	action=function()
-		return {}
-	end
-})
-
 was.register_function("getvalue",{
 	info="get table value (table key-string/number)",
 	action=function(t,i)
@@ -235,13 +228,12 @@ was.register_function("node.add",{
 			if n and n.buildable_to==false then
 				return
 			end
-			if was.nodepos() then
-				local inv=minetest.get_meta(was.nodepos()):get_inventory()
-				if not inv:contains_item("storage",name) then
-					return
-				end
-				inv:remove_item("storage",name)
+			local inv=minetest.get_meta(was.userdata.pos):get_inventory()
+			if not inv:contains_item("storage",name) then
+				return
 			end
+			inv:remove_item("storage",name)
+
 			minetest.set_node(pos,{name=name})
 		end
 	end
@@ -251,14 +243,12 @@ was.register_function("node.remove",{
 	info="remove node (pos)",
 	action=function(pos)
 		if was.is_pos(pos) and not minetest.is_protected(pos,was.userdata.name) then
-			if was.nodepos() then
-				local n=minetest.registered_nodes[minetest.get_node(pos).name]
-				local player=minetest.get_player_by_name(was.userdata.name)
-				if n and ((n.can_dig and player and n.can_dig(pos, player)==false) or (n.pointable==false) or n.drop=="") then
-					return
-				end
-				minetest.get_meta(was.nodepos()):get_inventory():add_item("storage",minetest.get_node(pos).name)
+			local n=minetest.registered_nodes[minetest.get_node(pos).name]
+			local player=minetest.get_player_by_name(was.userdata.name)
+			if n and ((n.can_dig and player and n.can_dig(pos, player)==false) or (n.pointable==false) or n.drop=="") then
+				return
 			end
+			minetest.get_meta(was.userdata.pos):get_inventory():add_item("storage",minetest.get_node(pos).name)
 			minetest.remove_node(pos)	
 		end
 	end
@@ -330,8 +320,8 @@ was.register_function("nodetimer.start",{
 	action=function(n,pos)
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos() and was.is_number(n) then
-			minetest.get_node_timer(was.nodepos()):start(n)
+		elseif not pos and was.is_number(n) then
+			minetest.get_node_timer(was.userdata.pos):start(n)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_number(n) and was.is_pos(pos) then
 			minetest.get_node_timer(pos):start(n)
 		end
@@ -345,8 +335,8 @@ was.register_function("nodetimer.stop",{
 	action=function(pos)
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos() then
-			minetest.get_node_timer(was.nodepos()):stop()
+		elseif not pos then
+			minetest.get_node_timer(was.userdata.pos):stop()
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			minetest.get_node_timer(pos):stop()
 		end
@@ -355,16 +345,15 @@ was.register_function("nodetimer.stop",{
 --[[
 ================= MESECONS =================
 --]]
-if minetest.get_modpath("mesecons") then
+
 was.register_function("mesecon.on",{
-	privs={was=true},
+	depends="mesecons",
 	info="Set mesecon on (nothing or pos) to effect another node requires was privilege ",
 	action=function(pos)
-		
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos() then
-			mesecon.receptor_on(was.nodepos())
+		elseif not pos then
+			mesecon.receptor_on(was.userdata.pos)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			mesecon.receptor_on(pos)
 		end
@@ -372,14 +361,13 @@ was.register_function("mesecon.on",{
 })
 
 was.register_function("mesecon.off",{
-	privs={was=true},
+	depends="mesecons",
 	info="Set mesecon off (nothing or pos) to effect another node requires was privilege ",
 	action=function(pos)
-		
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos() then
-			mesecon.receptor_off(was.nodepos())
+		elseif not pos then
+			mesecon.receptor_off(was.userdata.pos)
 		elseif pos and minetest.check_player_privs(was.userdata.name,{was=true}) and was.is_pos(pos) then
 			mesecon.receptor_off(pos)
 		end
@@ -387,13 +375,13 @@ was.register_function("mesecon.off",{
 })
 
 was.register_function("mesecon.send",{
-	privs={was=true},
+	depends="mesecons",
 	info="Send a mesecon signal (nothing or pos) to effect another node requires was privilege ",
 	action=function(pos)
 		if was.protected(pos) then
 			return
-		elseif not pos and was.nodepos() then
-			local p=was.nodepos()
+		elseif not pos then
+			local p=was.userdata.pos
 			mesecon.receptor_on(p)
 			minetest.after(1, function(p)
 				mesecon.receptor_off(p)
@@ -406,7 +394,30 @@ was.register_function("mesecon.send",{
 		end
 	end
 })
-end
+
+--[[
+================= digilines =================
+--]]
+
+was.register_function("digiline.send",{
+	info="Send digiline data through wires (string_channel data)",
+	depends="digilines",
+	action=function(channel,data)
+		local p=was.userdata.pos
+		if p and was.is_string(channel) then
+			local meta = minetest.get_meta(p)
+			local nchannel=meta:get_string("channel")
+			if nchannel==channel then
+				was.userdata.error="can't send to same channel"
+			else
+				digilines.receptor_send(p,digilines.rules.default,channel,data)
+			end
+		end	
+	end
+})
+
+
+
 
 --[[
 ================= PLAYER =================
@@ -444,7 +455,7 @@ was.register_function("entity.spawn_item",{
 	info="Spawn item (pos name)",
 	action=function(pos,name)
 		if was.is_pos(pos) and was.is_string(name) and minetest.registered_items[name] then
-			local inv=minetest.get_meta(was.nodepos()):get_inventory()
+			local inv=minetest.get_meta(was.userdata.pos):get_inventory()
 			if not inv:contains_item("storage",name) then
 				return
 			end
@@ -462,7 +473,7 @@ was.register_function("entity.remove_item",{
 			for _, ob in ipairs(minetest.get_objects_inside_radius(pos, 1)) do
 				local en=ob:get_luaentity()
 				if en and en.name=="__builtin:item" then
-					minetest.get_meta(was.nodepos()):get_inventory():add_item("storage",en.itemstring)
+					minetest.get_meta(was.userdata.pos):get_inventory():add_item("storage",en.itemstring)
 					en.object:remove()
 				end
 			end
@@ -574,7 +585,7 @@ was.register_function("if",{
 was.register_function("print",{
 	packed=true,
 	action=function(a)
-		if not was.user[was.userdata.name].show_print then
+		if not was.userdata.print or not was.user[was.userdata.name] or was.userdata.id~=was.user[was.userdata.name].id then
 		elseif was.user[was.userdata.name] then
 			local ud=was.user[was.userdata.name]
 			local s=""
@@ -620,5 +631,29 @@ was.register_function("dump",{
 	packed=true,
 	action=function(a)
 		print(dump(a))
+	end
+})
+
+was.register_function("get.pos",{
+	info="Get position",
+	action=function()
+		return was.userdata.pos
+	end
+})
+
+was.register_function("was.send",{
+	info="Send data through wires (string_channel data)",
+	action=function(channel,msg)
+		local p=was.userdata.pos
+		if p and was.is_string(channel) then
+			local meta = minetest.get_meta(p)
+			local nchannel=meta:get_string("channel")
+			if nchannel==channel then
+				was.userdata.error="can't send to same channel"
+			else
+				table.insert(was.wire_signals,{count=1,jobs={[p.x .."." .. p.y .."." ..p.z]=p},msg=msg,channel=channel,from_channel=nchannel})
+				was.wire_leading()
+			end
+		end	
 	end
 })

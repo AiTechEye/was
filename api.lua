@@ -1,4 +1,5 @@
 was.register_function=function(name,t)
+	if t.depends and not minetest.get_modpath(t.depends) then return end
 	was.functions[name]=t.action
 	was.function_packed[name]=t.packed
 	was.info[name]=t.info
@@ -10,14 +11,6 @@ was.register_symbol=function(symbol,f,info)
 	was.info[symbol]=info
 end
 
-was.new_user=function(name,def)
-	was.user[name]=was.user[name] or {}
-	was.user[name].nodepos=def.nodepos
-	was.user[name].show_print=def.show_print
-	was.user[name].global=was.user[name].global or {}
-	was.user[name].delete_on_exit=def.delete_on_exit
-end
-
 was.protected=function(pos)
 	if was.is_pos(pos) then
 		return minetest.is_protected(pos,was.userdata.name)
@@ -26,7 +19,7 @@ end
 
 was.chr=function(t)
 	local a=string.byte(t)
-	return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="." or t=="_"
+	return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="_" --or t=="." 
 end
 
 was.num=function(t)
@@ -51,10 +44,6 @@ was.is_table=function(t)
 	return type(t)=="table"
 end
 
-was.nodepos=function()
-	return was.user[was.userdata.name] and was.user[was.userdata.name].nodepos
-end
-
 was.ilastuserdata=function()
 	for i=was.userdata.index,#was.userdata.data,1 do
 		if not was.userdata.data[i+1] or was.userdata.data[i].type=="bracket end" then
@@ -76,8 +65,9 @@ was.iuserdata=function(i)
 	return v
 end
 
-was.compiler=function(input_text,user)
-	if type(input_text)~="string" or input_text:len()<2 or type(user)~="string" then
+was.compiler=function(input_text,def)
+	def=def or{}
+	if type(input_text)~="string" or input_text:len()<2 or type(def.user)~="string" or not was.is_pos(def.pos) then
 		return
 	end
 	input_text=input_text .."\n"
@@ -121,7 +111,7 @@ was.compiler=function(input_text,user)
 		elseif ob.type=="" and chr then
 --var
 			ob.type="var"
-		elseif ob.type=="var" and not chr and c~="." then
+		elseif ob.type=="var" and not chr and c~="."  then
 			if ob.content~="" then table.insert(data,ob) end
 			ob={type="",content=""}
 			i=i-1
@@ -140,6 +130,10 @@ was.compiler=function(input_text,user)
 			data={}
 		end
 		if ob.type~="" then
+			if c=="." and ob.type=="var" then
+				ob.table=true
+			end
+
 			ob.content=ob.content .. c
 		end	
 		i=i+1
@@ -177,9 +171,9 @@ was.compiler=function(input_text,user)
 				if data[ii].content=="end" then
 					ifends=ifends-1
 				end
-			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
+--			elseif data[ii+1] and data[ii].type=="var" and data[ii].content=="global" and data[ii+1].type=="var" then
 --global var
-				data[ii+1].global=true
+--				data[ii+1].global=true
 			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="=" and not was.symbols[data[ii+1].content ..  data[ii+2].content] then
 --var =
 				if func then
@@ -194,6 +188,7 @@ was.compiler=function(input_text,user)
 				end
 				func=true
 				data[ii].type="function"
+				data[ii].table=nil
 				if data[ii].content=="if" then
 					data[ii].ifstate=true
 					ifends=ifends+1
@@ -216,12 +211,28 @@ was.compiler=function(input_text,user)
 				elseif data[ii].content=="--" then
 					ii=#v
 				end
+--for next
 			elseif data[ii].type=="var" and data[ii].content=="next" then
 				if nexts==0 then
 					return 'ERROR line '.. i ..': no "for" to return to'
 				end
 				nexts=0
 				data[ii].forstate=true
+
+			--elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="." and data[ii+2].type=="var" then
+--table
+			--	data[ii].table={}
+			--	data[ii].content=data[ii].content .. "." .. data[ii+2].content
+			--	table.remove(data,ii+1)
+			--	table.remove(data,ii+1)
+				--for ni=ii,#v 2 do
+				--	if data[ni].type=="var" and data[ni+1].content=="." then
+				--		data[ii].table[data[ni].content]=1
+				--		data[ii].content=data[ii].content .. "." .. data[ii+2].content
+				--		data[ni]=nil
+				--		ii=ii-1
+				--	end
+				--end
 			end
 			ii=ii+1
 		end
@@ -233,15 +244,15 @@ was.compiler=function(input_text,user)
 		table.insert(output_data2,data)
 	end
 --print(dump(output_data2))
-	if user then
-		for i,c in pairs(output_data2) do
-		for name,v in pairs(c) do
-			if v.type=="function" and was.privs[v.content] and not minetest.check_player_privs(user,was.privs[v.content]) then
-				return 'ERROR: the function "' .. v.content ..'" requires privileges: ' .. minetest.privs_to_string(was.privs[v.content])
-			end
-		end
+
+	for i,c in pairs(output_data2) do
+	for name,v in pairs(c) do
+		if v.type=="function" and was.privs[v.content] and not minetest.check_player_privs(def.user,was.privs[v.content]) then
+			return 'ERROR: the function "' .. v.content ..'" requires privileges: ' .. minetest.privs_to_string(was.privs[v.content])
 		end
 	end
+	end
+
 
 	if ifends>0 then
 		return 'ERROR: Missing ' .. ifends .. ' if "end"'
@@ -251,11 +262,8 @@ was.compiler=function(input_text,user)
 		return 'ERROR: Missing ' .. nexts .. ' for "next"'
 	end
 
-	local msg=was.run(output_data2,user)
-	if was.user[user].delete_on_exit then
-		was.user[user]=nil
-	end
-	return 
+	local msg=was.run(output_data2,def)
+	return msg
 end
 
 was.run_function=function(func_name,data,VAR,i,ii)
@@ -302,16 +310,24 @@ was.run_function=function(func_name,data,VAR,i,ii)
 	end
 end
 
-was.run=function(input,user)
-	local VAR=table.copy(was.user[user].global)
+was.run=function(input,def)
+	local VAR={}	--table.copy(was.user[user].global)
+
+	for i,n in pairs(def.event) do
+		VAR[i]=n
+	end
+
 	local state=0
 	local elsestate=0
 	local forstate
 	was.userdata={
-		name=user,
+		name=def.user,
 		function_name="",
 		index=0,
 		data={},
+		id=def.pos.x .." " ..def.pos.y .." " .. def.pos.z,
+		pos=def.pos,
+		print=def.print,
 	}
 
 --print(dump(input))
@@ -394,9 +410,9 @@ was.run=function(input,user)
 					VAR[v[i].content]=nil
 				end
 
-				if v[i].global then
-					was.user[user].global[v[i].content]=VAR[v[i].content]
-				end
+			--	if v[i].global then
+			--		was.user[user].global[v[i].content]=VAR[v[i].content]
+			--	end
 
 				i=i+1
 			elseif v[i].type=="function" then

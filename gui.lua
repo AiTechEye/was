@@ -1,4 +1,4 @@
-minetest.after(1, function()
+minetest.after(0.2, function()
 	for f,v in pairs(was.functions) do
 		table.insert(was.function_list,f)
 	end
@@ -70,7 +70,7 @@ was.gui=function(name,msg)
 		end
 	end
 
-	funcs=funcs:sub(0,funcs:len()-1)
+	--funcs=funcs:sub(0,funcs:len()-1)
 	symbs=symbs:sub(0,symbs:len()-1)
 
 	local gui="size[20,12.1]"
@@ -87,6 +87,9 @@ was.gui=function(name,msg)
 	.."field[4.6,0.1;3,1;pupos;;" .. (was.user[name].punchpos or "") .."]"
 	.."dropdown[16.5,0.4;4,12;slist;" .. symbs ..";]"
 	.."textlist[16.5,1;4,12;list;" .. funcs .."]"
+	.."button[8.2,-0.2;1.9,1;stopt;Stop timer]"
+
+	.."field[10.1,0.1;3,1;channel;;" .. (was.user[name].channel or "") .."]"
 
 	.."checkbox[16.6,-0.4;inserttext;Insert text;".. was.user[name].inserttext.."]"
 	.."checkbox[7.2,-0.2;bg;;".. was.user[name].bg .."]"
@@ -95,7 +98,7 @@ was.gui=function(name,msg)
 	.."tooltip[pupos;Press Enter and punch on a node to return the position, or punch it again to get its name, Press Enter to move the text to the textarea]"
 	.."tooltip[bg;Background]"
 	.."tooltip[console;Console]"
-
+	.."tooltip[channel;Channel]"
 	was.user[name].punchpos=nil
 
 	minetest.after(0.1, function(gui,name)
@@ -111,6 +114,8 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		if (pressed.quit and not pressed.key_enter) or not was.user[name] then
 			if was.user[name] then
 				was.user[name].text=nil
+				was.user[name].show_print=nil
+				was.user[name].channel=nil
 			end
 			return
 		end
@@ -160,6 +165,8 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			was.user[name].console=pressed.console
 			was.gui(name)
 			return
+		elseif pressed.stopt and was.user[name].nodepos then
+			minetest.get_node_timer(was.user[name].nodepos):stop()
 		end
 
 		if pressed.list and pressed.list~="IMV" then
@@ -180,9 +187,11 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			end
 			was.gui(name,was.info[pressed.slist] or "")
 		elseif pressed.save then
-			if was.user[name].nodepos and minetest.get_item_group(minetest.get_node(was.user[name].nodepos).name,"was_component")==1 then
+			if was.user[name].nodepos and minetest.get_item_group(minetest.get_node(was.user[name].nodepos).name,"was_unit")==1 then
 				local meta=minetest.get_meta(was.user[name].nodepos)
 				meta:set_string("text",minetest.serialize(was.user[name].text))
+				meta:set_string("channel",pressed.channel)
+				was.user[name].channel=pressed.channel
 				was.gui(name,"Text saved successful")
 			end
 		elseif pressed.pupos and pressed.key_enter then
@@ -195,8 +204,12 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 				was.gui(name)
 			end
 		elseif pressed.run then
-			local msg=was.compiler(pressed.text,name)
-
+			local msg=was.compiler(was.user[name].text,{
+				user=name,
+				pos=was.user[name].nodepos,
+				print=true,
+				event={event="gui_run"}
+			})
 			if msg then
 				was.user[name].text=was.gui_addnumbers(was.user[name].text)
 				was.user[name].lines="on"
