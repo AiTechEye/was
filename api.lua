@@ -243,7 +243,6 @@ was.compiler=function(input_text,def)
 
 		table.insert(output_data2,data)
 	end
---print(dump(output_data2))
 
 	for i,c in pairs(output_data2) do
 	for name,v in pairs(c) do
@@ -252,7 +251,6 @@ was.compiler=function(input_text,def)
 		end
 	end
 	end
-
 
 	if ifends>0 then
 		return 'ERROR: Missing ' .. ifends .. ' if "end"'
@@ -285,10 +283,7 @@ was.run_function=function(func_name,data,VAR,i,ii)
 			table.insert(d,data[i].content)
 		elseif data[i].type=="symbol" and was.symbols[data[i].content] then
 			was.userdata.index=i
-			local a=was.symbols[data[i].content]()
-			if a then
-				table.insert(d, a)
-			end
+			table.insert(d, was.symbols[data[i].content]() or data[i].content)
 		elseif data[i].type=="var" then
 			table.insert(d,VAR[data[i].content] or func_name=="if" and "!") 
 		elseif data[i].type=="function" then
@@ -329,8 +324,6 @@ was.run=function(input,def)
 		pos=def.pos,
 		print=def.print,
 	}
-
---print(dump(input))
 
 	local index=0
 	while index<#input do
