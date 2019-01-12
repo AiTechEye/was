@@ -14,7 +14,7 @@ progress:
 [x] mesecons support  
 [x] pipeworks support  
 [x] make sure everything works  
-[ ] make event system works  
+[/] make event system works  
 
 
 ---
