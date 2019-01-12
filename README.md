@@ -20,8 +20,8 @@ progress:
 
 <details><summary>DATA TYPES</summary>
 	
-|Type|examples|examples|examples|examples|examples|
-|---------------|-----------|-|-|-|-|
+|Type|examples|examples|examples|examples|examples|examples|
+|---------------|-----------|-|-|-|-|-|
 |bool		|true	|false
 |number		|0	|123.456	|-5
 |string		|"asd 134"  
