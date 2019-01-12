@@ -39,7 +39,8 @@ a variable can only be set to 1 thing at time
 |var_aa =	|set variable value|
 |another_var =	|"string"| 123.54| false |var |function()| symbol|
 |vara = varb	|set to another var|
-|vara.b =	|set as table (no limit for sub variables/tables)|
+|vara.b =	|set as table|
+|event.msg.item	|item from event message|
 |a += 5		|add 5
 |a -= 4		|sub 4
 |a *= 98	|multiply
