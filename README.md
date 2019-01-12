@@ -9,7 +9,7 @@ in game programing, not in lua
 progress:
 
 [x] make procceses local  
-[ ] digiline support  
+[x] digiline support  
 [x] use own wire  
 [x] mesecons support  
 [x] pipeworks support  
