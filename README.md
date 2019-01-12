@@ -13,8 +13,8 @@ progress:
 [x] use own wire  
 [x] mesecons support  
 [x] pipeworks support  
-[x] make sure everything works  
-[ ] add/change tables, eg a.b =  
+[ ] make sure everything works  
+[40%] add/change tables, eg a.b =   or a.b.c.d="string" etc...
 [50%] make event system works  
 
 
