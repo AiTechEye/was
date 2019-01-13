@@ -57,6 +57,46 @@ node.add(a dirt)
 
 
 
+<details><summary>Saveing/load</summary>
+Everthing in the "save" variable/table will be automacly saved and loaded, eg:
+	
+```lua
+save.a="asd"
+save.unit_users.singleplayer.lpos=get.pos()
+
+if(save.a=="asd")
+..code..
+end
+```
+</details>
+
+
+
+
+
+<details><summary>Events</summary>
+Any reasons to the script on the unit is running will be able in the "event" variable, eg: event.type
+
+|event|type|
+|timer|
+
+
+event.type=="timer"
+event.type=="wire") 
+event.channel, event.msg event.from_channel (slower then digilines, but safer cuz you can see what it sent from)
+event.type=="mesecon on"
+event.type=="mesecon off"
+event.type=="digiline"
+event.channel event.msg
+event.type=="pipeworks"
+even.msg={item count}
+
+
+</details>
+
+
+
+
 
 <details><summary>IF</summary>
 
