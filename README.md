@@ -10,9 +10,6 @@ in game programing, not in lua
 
 progress:
 
-[ ] save / auto storage variable
-
-
 
 ---
 
