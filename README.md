@@ -8,11 +8,7 @@ in game programing, not in lua
 # dont use this in public servers yet, it need to be practical tested first.
 
 
-progress:
-
-
 ---
-
 
 
 <details><summary>DATA TYPES</summary>
