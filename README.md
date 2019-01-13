@@ -57,7 +57,7 @@ node.add(a dirt)
 
 
 
-<details><summary>Saveing/load</summary>
+<details><summary>Saving/load</summary>
 Everthing in the "save" variable/table will be automacly saved and loaded, eg:
 	
 ```lua
