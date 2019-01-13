@@ -11,38 +11,29 @@ was.register_symbol=function(symbol,f,info)
 	was.info[symbol]=info
 end
 
-was.protected=function(pos)
-	if was.is_pos(pos) then
-		return minetest.is_protected(pos,was.userdata.name)
+was.save=function(def,save)
+	if def.type=="node" then
+		if save then
+			print(dump(def.save))
+
+			minetest.get_meta(def.pos):set_string("save", minetest.serialize(def.save))
+		else
+			print(dump(minetest.deserialize(minetest.get_meta(def.pos):get_string("save")) or {}))
+
+			return minetest.deserialize(minetest.get_meta(def.pos):get_string("save")) or {}
+		end
+		return
 	end
 end
 
-was.chr=function(t)
-	local a=string.byte(t)
-	return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="_" --or t=="." 
-end
-
-was.num=function(t)
-	local a=string.byte(t)
-	return a>=48 and a<=57
-end
-
-was.symbol=function(t)
-	return was.symbols_characters:find(t)
-end
-
-was.is_number=function(n)
-	return type(n)=="number"
-end
-was.is_string=function(s)
-	return type(s)=="string"
-end
-was.is_pos=function(pos)
-	return type(pos)=="table" and type(pos.x)=="number" and type(pos.y)=="number" and type(pos.z)=="number"
-end
-was.is_table=function(t)
-	return type(t)=="table"
-end
+was.protected=function(pos) if was.is_pos(pos) then return minetest.is_protected(pos,was.userdata.name) end end
+was.chr=function(t) local a=string.byte(t) return (a>=65 and a<=90) or (a>=97 and a<=122) or t=="_" end
+was.num=function(t) local a=string.byte(t) return a>=48 and a<=57 end
+was.symbol=function(t) return was.symbols_characters:find(t) end
+was.is_number=function(n) return type(n)=="number" end
+was.is_string=function(s) return type(s)=="string" end
+was.is_pos=function(pos) return type(pos)=="table" and type(pos.x)=="number" and type(pos.y)=="number" and type(pos.z)=="number" end
+was.is_table=function(t) return type(t)=="table" end
 
 was.ilastuserdata=function()
 	for i=was.userdata.index,#was.userdata.data,1 do
@@ -277,7 +268,9 @@ was.compiler=function(input_text,def)
 		return 'ERROR: Missing ' .. nexts .. ' for "next"'
 	end
 --print(dump(output_data2))
-	local msg=was.run(output_data2,def,VAR)
+	local msg,def,VAR=was.run(output_data2,def,VAR)
+	def.save=VAR.save
+	was.save(def,true)
 
 	return msg
 end
@@ -287,8 +280,10 @@ was.get_VAR=function(VAR,avar)
 		local a=avar.table.split(avar.table,".")
 		local t=VAR[avar.content]
 		for i,v in ipairs(a) do
-			if t[v] then
+			if t and t[v] then
 				t=t[v]
+			else
+				break
 			end
 		end
 		return t
@@ -311,7 +306,7 @@ was.set_VAR=function(VAR,avar,value)
 		t[a[#a]]=value
 		return VAR
 	else
-		VAR[avar.content]=value -- VAR[nvar.content]
+		VAR[avar.content]=value
 		return VAR
 	end
 end
@@ -359,6 +354,7 @@ end
 
 was.run=function(input,def,VAR)
 	VAR.event=def.event
+	VAR.save=was.save(def)
 	local state=0
 	local elsestate=0
 	local forstate
@@ -384,7 +380,7 @@ was.run=function(input,def,VAR)
 			was.userdata.var=VAR
 
 			if was.userdata.error then
-				return 'ERROR line '.. index ..': ' .. was.userdata.error
+				return 'ERROR line '.. index ..': ' .. was.userdata.error,def,VAR
 			elseif v[i].forstate then
 				if v[i].content=="next" then
 
@@ -402,7 +398,7 @@ was.run=function(input,def,VAR)
 						e=fo.e,
 					}
 					if fo.msg then
-						return fo.msg
+						return fo.msg,def,VAR
 					end
 				end
 			elseif v[i].ifstate then
@@ -459,5 +455,6 @@ was.run=function(input,def,VAR)
 		end
 	end
 	was.userdata={}
+	return "",def,VAR
 	--print(dump(VAR))
 end

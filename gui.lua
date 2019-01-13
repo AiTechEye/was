@@ -1,47 +1,3 @@
-minetest.after(0.2, function()
-	for f,v in pairs(was.functions) do
-		table.insert(was.function_list,f)
-	end
-	table.sort(was.function_list,function(a,b) return a < b end)
-end)
-
-was.gui_addnumbers=function(text)
-	text=text.."\n"
-	for i=1,text:len(),1 do
-		if text:sub(i,i)~="\n" then
-			text=text:sub(i,text:len())
-			break
-		end
-	end
-	local t=""
-	for i,v in ipairs(text.split(text,"\n")) do
-		t=t ..i.." " ..v .."\n"
-	end
-	return t
-end
-
-
-was.gui_delnumbers=function(text)
-	for i=1,text:len(),1 do
-		if text:sub(i,i)~="\n" then
-			text=text:sub(i,text:len())
-			break
-		end
-	end
-	local t=""
-	for i,v in ipairs(text.split(text,"\n")) do
-		for ii=1,v:len(),1 do
-			local s=string.sub(v,ii,ii)
-			if not was.num(s) then
-				ii= (s==" " and ii+1) or ii
-				t=t .. string.sub(v,ii,v:len()).."\n"
-				break
-			end
-		end
-	end
-	return t
-end
-
 was.gui=function(name,msg)
 
 	was.user[name].inserttext=	was.user[name].inserttext or "true"
@@ -105,7 +61,6 @@ was.gui=function(name,msg)
 		return minetest.show_formspec(name, "was.gui",gui)
 	end, gui,name)
 end
-
 
 minetest.register_on_player_receive_fields(function(user, form, pressed)
 
@@ -206,12 +161,14 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			end
 		elseif pressed.run then
 			local msg=was.compiler(was.user[name].text,{
+				save=was.storage,
+				type="node",
 				user=name,
 				pos=was.user[name].nodepos,
 				print=true,
 				event={type="gui_run"}
 			})
-			if msg then
+			if msg and msg~="" then
 				was.user[name].text=was.gui_addnumbers(was.user[name].text)
 				was.user[name].lines="on"
 				was.userdata.name=name
@@ -223,6 +180,49 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		end
 	end
 end)
+
+minetest.after(0.2, function()
+	for f,v in pairs(was.functions) do
+		table.insert(was.function_list,f)
+	end
+	table.sort(was.function_list,function(a,b) return a < b end)
+end)
+
+was.gui_addnumbers=function(text)
+	text=text.."\n"
+	for i=1,text:len(),1 do
+		if text:sub(i,i)~="\n" then
+			text=text:sub(i,text:len())
+			break
+		end
+	end
+	local t=""
+	for i,v in ipairs(text.split(text,"\n")) do
+		t=t ..i.." " ..v .."\n"
+	end
+	return t
+end
+
+was.gui_delnumbers=function(text)
+	for i=1,text:len(),1 do
+		if text:sub(i,i)~="\n" then
+			text=text:sub(i,text:len())
+			break
+		end
+	end
+	local t=""
+	for i,v in ipairs(text.split(text,"\n")) do
+		for ii=1,v:len(),1 do
+			local s=string.sub(v,ii,ii)
+			if not was.num(s) then
+				ii= (s==" " and ii+1) or ii
+				t=t .. string.sub(v,ii,v:len()).."\n"
+				break
+			end
+		end
+	end
+	return t
+end
 
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local name=puncher:get_player_name()
