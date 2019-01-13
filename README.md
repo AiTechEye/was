@@ -77,21 +77,14 @@ end
 <details><summary>Events</summary>
 Any reasons to the script on the unit is running will be able in the "event" variable, eg: event.type
 
-|event|type|
-|timer|
-
-
-event.type=="timer"
-event.type=="wire") 
-event.channel, event.msg event.from_channel (slower then digilines, but safer cuz you can see what it sent from)
-event.type=="mesecon on"
-event.type=="mesecon off"
-event.type=="digiline"
-event.channel event.msg
-event.type=="pipeworks"
-even.msg={item count}
-
-
+|event	      |type         |channel|from_channel|msg|
+|-------------|-------------|-------|------------|---|
+|timer        |"timer"      |✖      |✖          |✖
+|wire         |"wire"       |✔      |✔          |✔
+|digilines    |"digiline"   |✔      |✖          |✔
+|msesecons on |"mesecon on" |✖      |✖          |✖
+|meseconns off|"mesecon off"|✖      |✖          |✖
+|pipeworks    |"pipeworks"  |✖      |✖          |{item,count}
 </details>
 
 
