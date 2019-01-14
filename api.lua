@@ -14,12 +14,8 @@ end
 was.save=function(def,save)
 	if def.type=="node" then
 		if save then
-			print(dump(def.save))
-
 			minetest.get_meta(def.pos):set_string("save", minetest.serialize(def.save))
 		else
-			print(dump(minetest.deserialize(minetest.get_meta(def.pos):get_string("save")) or {}))
-
 			return minetest.deserialize(minetest.get_meta(def.pos):get_string("save")) or {}
 		end
 		return
@@ -193,7 +189,7 @@ was.compiler=function(input_text,def)
 --)				
 				func=nil
 				data[ii].type="bracket end"
-			elseif data[ii].type=="symbol" then
+			elseif data[ii].type=="symbol" and not data[ii].content=="{" then
 --symbol
 				if not was.symbols[data[ii].content] then
 					return 'ERROR line '.. i ..': "' .. data[ii].content ..'" unknown symbol'
