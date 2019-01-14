@@ -135,7 +135,7 @@ was.compiler=function(input_text,def)
 		local ii=1
 		data=v
 		while ii<=#v do
-			if data[ii].type=="number" then
+			if data[ii].type=="number" and not (data[ii-1] and data[ii-1].content==".") then
 --number
 				data[ii].content=tonumber(data[ii].content)
 
@@ -204,7 +204,7 @@ was.compiler=function(input_text,def)
 				nexts=0
 				data[ii].forstate=true
 
-			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="." and data[ii+2].type=="var" then
+			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="." and (data[ii+2].type=="var" or data[ii+2].type=="number") then
 --table
 				data[ii].table=data[ii+2].content
 				local vn=data[ii].content
@@ -214,7 +214,7 @@ was.compiler=function(input_text,def)
 				table.remove(data,ii+1)
 				table.remove(data,ii+1)
 				for ni=ii,#v,1 do
-					if data[ii+1] and data[ii+2] and data[ii+1].content=="." and data[ii+2].type=="var" then
+					if data[ii+1] and data[ii+2] and data[ii+1].content=="." and (data[ii+2].type=="var" or data[ii+2].type=="number") then
 						data[ii].table=data[ii].table .. "." .. data[ii+2].content
 						t[data[ii+2].content]={}
 						t=t[data[ii+2].content]
@@ -278,6 +278,8 @@ was.get_VAR=function(VAR,avar)
 		for i,v in ipairs(a) do
 			if t and t[v] then
 				t=t[v]
+			elseif t and t[tonumber(v)] then
+				t=t[tonumber(v)]
 			else
 				break
 			end
@@ -294,12 +296,19 @@ was.set_VAR=function(VAR,avar,value)
 		local t=VAR[avar.content]
 		for i,v in ipairs(a) do
 			if a[i+1] then
-				t=t[v]
+				local n=tonumber(v)
+				if n then
+					t=t[n]
+				else
+					t=t[v]
+				end
 			else
 				break
 			end
 		end
-		t[a[#a]]=value
+		if t and t[a[#a]] then
+			t[a[#a]]=value
+		end
 		return VAR
 	else
 		VAR[avar.content]=value

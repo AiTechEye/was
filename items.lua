@@ -37,11 +37,13 @@ minetest.register_node("was:computer", {
 				return
 			end
 			minetest.swap_node(pos,{name="was:computer",param2=node.param2})
+			local punchpos=was.user[name] and was.user[name].punchpos
 			was.user[name]={
 				nodepos=pos,
 				channel=meta:get_string("channel"),
 				text=minetest.deserialize(meta:get_string("text")),
 				id=pos.x .." " .. pos.y .." " ..pos.z,
+				punchpos=punchpos,
 			}
 			was.gui(name)
 		end

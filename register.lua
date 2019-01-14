@@ -4,13 +4,13 @@
 --]]
 
 was.register_symbol("?",function() return was.userdata.name end,"return username")
-was.register_symbol("!", function() if was.userdata.function_name~="if" then was.userdata.error=" ! only able in if state" end end,"Empty value")
-was.register_symbol(">", function() if was.userdata.function_name~="if" then was.userdata.error=" > only able in if state" end end,"Greater then (only used with if)" )
-was.register_symbol("<", function() if was.userdata.function_name~="if" then was.userdata.error=" < only able in if state" end end,"Less then (only used with if)" )
-was.register_symbol("<=", function() if was.userdata.function_name~="if" then was.userdata.error=" <= only able in if state" end end,"Less or equal (only used with if)" )
-was.register_symbol(">=", function() if was.userdata.function_name~="if" then was.userdata.error=" >= only able in if state" end end,"Greater or equal (only used with if)" )
-was.register_symbol("==", function() if was.userdata.function_name~="if" then was.userdata.error=" == only able in if state" end end,"Equal (only used with if)" )
-was.register_symbol("~=", function() if was.userdata.function_name~="if" then was.userdata.error=" > only able in if state" end end,"Equal (only used with if)" )
+was.register_symbol("!", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" ! only able in if state" end end,"Empty value")
+was.register_symbol(">", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" > only able in if state" end end,"Greater then (only used with if)" )
+was.register_symbol("<", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" < only able in if state" end end,"Less then (only used with if)" )
+was.register_symbol("<=", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" <= only able in if state" end end,"Less or equal (only used with if)" )
+was.register_symbol(">=", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" >= only able in if state" end end,"Greater or equal (only used with if)" )
+was.register_symbol("==", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" == only able in if state" end end,"Equal (only used with if)" )
+was.register_symbol("~=", function() if was.userdata.function_name~="if" and was.userdata.function_name~="elseif" then was.userdata.error=" > only able in if state" end end,"Equal (only used with if)" )
 was.register_symbol("!=",function() end, "var = nothing")
 was.register_symbol("--",function() end, "Comment")
 was.register_symbol("-",function() end, "Minus")
@@ -54,6 +54,59 @@ was.register_symbol("/=",function()
 --[[
 ================= SERVER =================
 --]]
+
+
+was.register_function("get.objects",{
+	info='return table of objects (pos distance <"player" or "entity" or none for both>)',
+	action=function(pos,d,typ)
+		if was.is_pos(pos) and was.is_number(d) then
+			if not minetest.check_player_privs(was.userdata.name,{was=true}) and d>10 then
+				was.userdata.error="for safety reasons is the max distance 10 without the was privilege"
+				return
+			end
+			if not typ then
+				return minetest.get_objects_inside_radius(pos, d)
+			else
+				local obs={}
+				for _, ob in ipairs(minetest.get_objects_inside_radius(pos, d)) do
+					local en=ob:get_luaentity() 
+					if (en and typ=="entity") or (not en and typ=="player") then
+						table.insert(obs,ob)
+					end
+				end
+				return obs
+			end
+		end
+	end
+})
+
+was.register_function("cmd",{
+	info='Command eg /me says... (<"commandname"> <"text" or none>)',
+	action=function(cmd,param)
+	param=param or ""
+	if not ((was.is_string(cmd) or was.is_number(cmd)) and (was.is_string(param) or was.is_number(param))) then
+		return
+	end
+
+	local c=minetest.registered_chatcommands[cmd]
+	if not c then
+		return 
+	end
+	local p1=minetest.check_player_privs(was.userdata.name, c.privs)
+	local msg=""
+	local a
+	if not p1 then
+		msg="You aren't' allowed to do that"
+	elseif c then
+		a,msg=c.func(was.userdata.name,param)
+		msg=msg or ""
+		minetest.chat_send_player(was.userdata.name,msg)
+
+	end
+	return msg
+	end
+})
+
 
 --[[
 ================= DATATYPES = VARIABLES =================
@@ -105,7 +158,7 @@ was.register_function("math",{
 	end
 })
 
-was.register_function("getvalue",{
+was.register_function("table.getvalue",{
 	info="get table value (table key-string/number)",
 	action=function(t,i)
 		if was.is_table(t) and (was.is_number(i) or was.is_string(i)) then
@@ -114,7 +167,7 @@ was.register_function("getvalue",{
 	end
 })
 
-was.register_function("setvalue",{
+was.register_function("table.setvalue",{
 	info="set table key value (table string/number value )",
 	action=function(t,i,value)
 		if was.is_table(t) and was.is_number(i) and not value then
@@ -127,7 +180,7 @@ was.register_function("setvalue",{
 	end
 })
 
-was.register_function("remove",{
+was.register_function("table.remove",{
 	info="remove from table by index (table n) last value (table) key (table string)",
 	action=function(t,i)
 		if was.is_table(t) then
@@ -147,7 +200,7 @@ was.register_function("remove",{
 	end
 })
 
-was.register_function("insert",{
+was.register_function("table.insert",{
 	info="Insert variables and datatypes to an table (table n1 s1 table1 ...)",
 	packed=true,
 	action=function(a)
@@ -166,7 +219,20 @@ was.register_function("insert",{
 	end
 })
 
-was.register_function("merge",{
+was.register_function("table.length",{
+	info="Returns table length (table)",
+	action=function(a)
+		if was.is_table(a) then
+			local l=0
+			for _,i in pairs(a) do
+				l=l+1
+			end
+			return l
+		end
+	end
+})
+
+was.register_function("table.merge",{
 	info="Merge variables and datatypes (s1 n1 s...) or (table table2 s n)",
 	packed=true,
 	action=function(a)
@@ -214,7 +280,7 @@ was.register_function("node.set",{
 	info="set node (pos,nodename)",
 	privs={give=true,was=true},
 	action=function(pos,name)
-		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
+		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not was.protected(pos) then
 			minetest.set_node(pos,{name=name})
 		end
 	end
@@ -223,7 +289,11 @@ was.register_function("node.set",{
 was.register_function("node.add",{
 	info="add node (not replacing buildable_to) (pos,nodename)",
 	action=function(pos,name)
-		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not minetest.is_protected(pos,was.userdata.name) then
+		if was.is_string(name) and was.is_pos(pos) and minetest.registered_nodes[name] and not was.protected(pos) then
+			if not minetest.check_player_privs(was.userdata.name,{was=true}) and vector.distance(was.userdata.pos,pos)>50 then
+				was.userdata.error="for safety reasons is the max distance 50 without the was privilege"
+				return
+			end
 			local n=minetest.registered_nodes[minetest.get_node(pos).name]
 			if n and n.buildable_to==false then
 				return
@@ -243,6 +313,10 @@ was.register_function("node.remove",{
 	info="remove node (pos)",
 	action=function(pos)
 		if was.is_pos(pos) and not minetest.is_protected(pos,was.userdata.name) then
+			if not minetest.check_player_privs(was.userdata.name,{was=true}) and vector.distance(was.userdata.pos,pos)>30 then
+				was.userdata.error="for safety reasons is the max distance 30 without the was privilege"
+				return
+			end
 			local n=minetest.registered_nodes[minetest.get_node(pos).name]
 			local player=minetest.get_player_by_name(was.userdata.name)
 			if n and ((n.can_dig and player and n.can_dig(pos, player)==false) or (n.pointable==false) or n.drop=="") then
@@ -253,6 +327,25 @@ was.register_function("node.remove",{
 		end
 	end
 })
+
+was.register_function("node.set_param",{
+	info="Set node param (pos,number)",
+	action=function(pos,p)
+		if was.is_pos(pos) and was.is_number(p) and not was.protected(pos) then
+			minetest.swap_node(pos,{name=minetest.get_node(pos).name,param2=p})	
+		end
+	end
+})
+
+was.register_function("node.get_param",{
+	info="Get node param (pos)",
+	action=function(pos)
+		if was.is_pos(pos) then
+			return minetest.get_node(pos).param2
+		end
+	end
+})
+
 
 was.register_function("node.get_name",{
 	info="get node name (pos)",
@@ -433,8 +526,28 @@ was.register_function("player.msg",{
 	end
 })
 
+was.register_function("player.say",{
+	privs={shout=true},
+	info="Chatt (text)",
+	action=function(msg)
+		if was.is_string(msg) or was.is_number(msg) then
+			minetest.chat_send_all("<" .. was.userdata.name .."> " .. msg)
+		end
+	end
+})
+
+was.register_function("player.server",{
+	privs={ban=true,was=true},
+	info="Server message (text)",
+	action=function(msg)
+		if was.is_string(msg) or was.is_number(msg) then
+			minetest.chat_send_all(msg)
+		end
+	end
+})
+
 was.register_function("player.get_pos",{
-	info="get player name (playername)",
+	info="get player pos (playername)",
 	action=function(name)
 		if not was.is_string(name) then
 			return
@@ -442,6 +555,20 @@ was.register_function("player.get_pos",{
 		local p=minetest.get_player_by_name(name)
 		if p then
 			return p:get_pos()
+		end
+	end
+})
+
+was.register_function("player.set_pos",{
+	privs={teleport=true,bring=true},
+	info="set player pos (playername)",
+	action=function(name,pos)
+		if not (was.is_string(name) and was.is_pos(pos)) then
+			return
+		end
+		local p=minetest.get_player_by_name(name)
+		if p then
+			return p:set_pos(pos)
 		end
 	end
 })

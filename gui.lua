@@ -4,6 +4,7 @@ was.gui=function(name,msg)
 	was.user[name].lines=	was.user[name].lines or "off"
 	was.user[name].bg=	was.user[name].bg or "true"
 	was.user[name].console=	was.user[name].console or "false"
+	
 
 	local funcs=""
 	local symbs="SYMBOLS,"

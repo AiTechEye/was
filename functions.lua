@@ -1,3 +1,23 @@
+was.runcmd=function(cmd,name,param)
+	local c=minetest.registered_chatcommands[cmd]
+	if not c then
+		return 
+	end
+	local p1=minetest.check_player_privs(name, c.privs)
+	local msg=""
+	local a
+	if not p1 then
+		msg="You aren't' allowed to do that"
+	elseif c then
+		a,msg=c.func(name,param)
+		msg=msg or ""
+		minetest.chat_send_player(name,msg)
+
+	end
+	return msg
+end
+
+
 was.get_node=function(pos)
 	local n=minetest.get_node(pos).name
 	if n=="ignore" then
