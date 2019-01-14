@@ -33,6 +33,7 @@ a variable can only be set to 1 thing at time
 |another_var =	|"string"| 123.54| false |var |function()| symbol|
 |vara = varb	|set to another var|
 |vara.b =	|set as table|
+|vara.1 = 	|variable index 1 set, eg in lua: vara[1] (limeted to root variable)
 |event.msg.item	|item from event message|
 |a += 5		|add 5
 |a -= 4		|sub 4
