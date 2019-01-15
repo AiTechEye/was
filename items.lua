@@ -232,7 +232,7 @@ minetest.register_node("was:touchscreen", {
 			{-0.15, -0.25, 0.45, 0.15, 0.25, 0.5},
 		}
 	},
-	groups = {oddly_breakable_by_hand = 3,was_unit=1},
+	groups = {cracky = 3,was_unit=1},
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		meta:set_string("owner",placer:get_player_name() or "")
@@ -263,5 +263,32 @@ minetest.register_node("was:touchscreen", {
 		if channel==meta:get_string("channel") and (was.is_string(msg) or was.is_number(msg)) then
 			meta:set_string("infotext",msg)
 		end
+	end,
+})
+
+minetest.register_node("was:roater_sender", {
+	description = "Roater sender",
+	tiles = {"was_wire.png"},
+	drawtype="nodebox",
+	paramtype = "light",
+	paramtype2="facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.37, -0.5, -0.25, 0.37, -0.37, 0.25},
+			{-0.37, -0.37, 0.18, -0.31, -0.125, 0.25},
+			{0.31, -0.5, 0.18, 0.37, -0.12, 0.25}
+		}
+	},
+	groups = {oddly_breakable_by_hand = 3,was_unit=1},
+	on_waswire=function(pos,channel,from_channel,msg)
+		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,10),vector.subtract(pos,10),"group:was_unit")) do
+			if not vector.equals(pos,p) then
+				was.send(p,channel,msg,from_channel)
+			end
+		end
+	end,
+	on_timer = function (pos, elapsed)
+		minetest.swap_node(pos,{name="was:wire",param2=135})
 	end,
 })

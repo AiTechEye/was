@@ -1,9 +1,19 @@
 minetest.register_craft({
-	output = "was:chemical_lump",
+	output = "was:chemical_lump 3",
 	recipe = {
 		{"group:dye","group:dye","group:dye"},
 		{"group:dye","default:copper_lump","group:dye"},
 		{"group:dye","default:glass","group:dye"},
+	}
+})
+
+
+minetest.register_craft({
+	output = "was:roater_sender",
+	recipe = {
+		{"was:plastic_piece","was:plastic_piece","was:plastic_piece"},
+		{"was:plastic_piece","default:mese","was:plastic_piece"},
+		{"was:plastic_piece","was:wire","was:plastic_piece"},
 	}
 })
 
@@ -16,7 +26,7 @@ minetest.register_craft({
 	}
 })
 minetest.register_craft({
-	output = "was:wire 30",
+	output = "was:wire 20",
 	recipe = {
 		{"was:plastic_piece","was:plastic_piece","was:plastic_piece"},
 	}
