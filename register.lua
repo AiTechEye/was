@@ -232,7 +232,7 @@ was.register_function("table.length",{
 	end
 })
 
-was.register_function("table.merge",{
+was.register_function("merge",{
 	info="Merge variables and datatypes (s1 n1 s...) or (table table2 s n)",
 	packed=true,
 	action=function(a)
@@ -780,8 +780,7 @@ was.register_function("was.send",{
 			if nchannel==channel then
 				was.userdata.error="can't send to same channel"
 			else
-				table.insert(was.wire_signals,{count=1,jobs={[p.x .."." .. p.y .."." ..p.z]=p},msg=msg,channel=channel,from_channel=nchannel})
-				was.wire_leading()
+				was.send(p,channel,msg,nchannel)
 			end
 		end	
 	end

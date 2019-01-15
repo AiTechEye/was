@@ -20,7 +20,11 @@ minetest.register_node("was:computer", {
 	},
 	groups = {oddly_breakable_by_hand = 3,was_unit=1,tubedevice = 1, tubedevice_receiver = 1},
 	on_punch = function(pos, node, player, pointed_thing)
-		minetest.swap_node(pos,{name="was:computer_closed",param2=node.param2})
+		local meta=minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name or minetest.check_player_privs(name, {protection_bypass=true}) then
+			minetest.swap_node(pos,{name="was:computer_closed",param2=node.param2})
+		end
 	end,
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
@@ -68,7 +72,7 @@ minetest.register_node("was:computer", {
 	on_waswire=function(pos,channel,from_channel,msg)
 		local meta=minetest.get_meta(pos)
 		local user=meta:get_string("owner")
-		if user~="" and channel==meta:get_string("channel") then
+		if user~="" and channel==meta:get_string("channel") and from_channel~=meta:get_string("channel") then
 			was.compiler(minetest.deserialize(meta:get_string("text")),{
 				type="node",
 				user=user,
@@ -175,11 +179,12 @@ minetest.register_node("was:computer_closed", {
 
 minetest.register_node("was:wire", {
 	description = "was wire",
-	tiles = {
-		"was_guibg.png^[colorize:#FFFFFF",
-	},
+	tiles = {{name="was_wire.png"}}, --,color=0xffffffff
+	drop="was:wire",
 	drawtype="nodebox",
 	paramtype = "light",
+	paramtype2="colorwallmounted",
+	palette="was_palette.png",
 	sunlight_propagates=true,
 	walkable=false,
 	node_box = {
@@ -193,14 +198,61 @@ minetest.register_node("was:wire", {
 	},
 	connects_to={"group:was_wire","group:was_unit"},
 	groups = {dig_immediate = 3,was_wire=1},
-	on_construct = function(pos)
-		if minetest.get_item_group(minetest.get_node({x=pos.x,y=pos.y+1,z=pos.z}).name,"was_wire")>0 then
-		--	minetest.swap_node(pos,{name="was:wire_up"})
-		elseif minetest.get_item_group(minetest.get_node({x=pos.x,y=pos.y-1,z=pos.z}).name,"was_wire")>0 then
-		--	minetest.swap_node(pos,{name="was:wire_down"})
+	--on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+	--	node.param2=node.param2+1
+	--	print(node.param2)
+	--	minetest.swap_node(pos,node)
+	--end,
+	after_place_node = function(pos, placer)
+		minetest.set_node(pos,{name="was:wire",param2=135})
+	end,
+	on_timer = function (pos, elapsed)
+		minetest.swap_node(pos,{name="was:wire",param2=135})
+	end,
+})
+
+minetest.register_node("was:touchscreen", {
+	description = "Touchscreen",
+	tiles = {"was_touchscreen.png"},
+	drawtype="nodebox",
+	paramtype = "light",
+	paramtype2="facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.15, -0.25, 0.45, 0.15, 0.25, 0.5},
+		}
+	},
+	groups = {oddly_breakable_by_hand = 3,was_unit=1},
+	after_place_node = function(pos, placer)
+		local meta = minetest.get_meta(pos)
+		meta:set_string("owner",placer:get_player_name() or "")
+		meta:set_string("channel", pos.x .." " ..pos.y .." " ..pos.z)
+	end,
+	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		local meta = minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name and not player:get_player_control().aux1 then
+			local gui="size[2,1.5]field[0,0.3;3,1;channel;Channel;" .. meta:get_string("channel") .."]"
+			.."field[0,1.3;3,1;channelto;Send to channel;" .. meta:get_string("channelto") .."]"
+			was.user[name]=pos
+			minetest.after(0.1, function(gui,name)
+				return minetest.show_formspec(name, "was.channel+channelto",gui)
+			end, gui,name)
+		else
+			was.send(pos,meta:get_string("channelto"),name,meta:get_string("channel"))
 		end
 	end,
-	on_destruct = function(pos)
-		--minetest.check_for_falling(pos)
-	end
+	on_punch = function(pos, node, player, pointed_thing)
+		local meta = minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		was.send(pos,meta:get_string("channelto"),name,meta:get_string("channel"))
+	end,
+	on_waswire=function(pos,channel,from_channel,msg)
+		local meta=minetest.get_meta(pos)
+		local user=meta:get_string("owner")
+		if channel==meta:get_string("channel") and (was.is_string(msg) or was.is_number(msg)) then
+			meta:set_string("infotext",msg)
+		end
+	end,
 })

@@ -7,6 +7,7 @@ was.gui=function(name,msg)
 	
 
 	local funcs=""
+	local funcs2cho={}
 	local symbs="SYMBOLS,"
 	local tx=17
 	local console=""
@@ -24,6 +25,7 @@ was.gui=function(name,msg)
 	for _,v in pairs(was.function_list) do
 		if minetest.check_player_privs(name,was.privs[v]) then 
 			funcs=funcs .. v ..","
+			table.insert(funcs2cho,v)
 		end
 	end
 
@@ -55,8 +57,10 @@ was.gui=function(name,msg)
 	.."tooltip[pupos;Press Enter and punch on a node to return the position, or punch it again to get its name, Press Enter to move the text to the textarea]"
 	.."tooltip[bg;Background]"
 	.."tooltip[console;Console]"
-	.."tooltip[channel;Channel]"
+	.."tooltip[channel;Channel (Press save to change)]"
+
 	was.user[name].punchpos=nil
+	was.user[name].funcs=funcs2cho
 
 	minetest.after(0.1, function(gui,name)
 		return minetest.show_formspec(name, "was.gui",gui)
@@ -70,7 +74,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		if (pressed.quit and not pressed.key_enter) or not was.user[name] then
 			if was.user[name] then
 				was.user[name].text=nil
-				was.user[name].show_print=nil
+				was.user[name].funcs=nil
 				was.user[name].channel=nil
 			end
 			return
@@ -127,7 +131,7 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 
 		if pressed.list and pressed.list~="IMV" then
 			local n=pressed.list:gsub("CHG:","")
-			local f=was.function_list[tonumber(n)]
+			local f=was.user[name].funcs[tonumber(n)]
 			local info=was.info[f] or ""
 			if was.privs[f] then
 				info=info .. "| Privs: " ..minetest.privs_to_string(was.privs[f])
@@ -179,6 +183,27 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			was.gui(name,msg)
 			return
 		end
+	elseif form=="was.channel" then
+		local name=user:get_player_name()
+		if was.user[name] and pressed.channel then
+			minetest.get_meta(was.user[name]):set_string("channel",pressed.channel)
+		end
+		was.user[name]=nil
+	elseif form=="was.channel+channelto" then
+		local name=user:get_player_name()
+		if was.user[name] then
+			local m=minetest.get_meta(was.user[name])
+			if pressed.channel==m:get_string("channelto") or pressed.channelto==m:get_string("channel") then
+				return
+			end
+			if pressed.channel then
+				m:set_string("channel",pressed.channel)
+			end
+			if pressed.channelto then
+				m:set_string("channelto",pressed.channelto)
+			end
+		end
+		was.user[name]=nil
 	end
 end)
 
