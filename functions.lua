@@ -53,7 +53,7 @@ was.wire_leading=function()
 					a.jobs[s]=n
 					c=c+1
 					minetest.set_node(n,{name="was:wire",param2=3})
-					minetest.get_node_timer(pos):start(0.1)
+					minetest.get_node_timer(n):start(0.1)
 				elseif not a.jobs[s] and minetest.get_item_group(na,"was_unit")>0 and minetest.registered_nodes[na].on_waswire then
 					minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)
 					a.jobs[s]=n
