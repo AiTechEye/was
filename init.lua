@@ -17,7 +17,7 @@ dofile(minetest.get_modpath("was") .. "/functions.lua")
 dofile(minetest.get_modpath("was") .. "/items.lua")
 dofile(minetest.get_modpath("was") .. "/register.lua")
 dofile(minetest.get_modpath("was") .. "/gui.lua")
-
+dofile(minetest.get_modpath("was") .. "/craft.lua")
 
 --minetest.register_chatcommand("was", {
 --	description = "World action script gui",

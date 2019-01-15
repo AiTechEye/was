@@ -1,3 +1,12 @@
+minetest.register_craftitem("was:chemical_lump", {
+	description = "Chemical lump",
+	inventory_image = "was_chemical_lump.png",
+})
+minetest.register_craftitem("was:plastic_piece", {
+	description = "Plastic piece",
+	inventory_image = "was_plastic_piece.png",
+})
+
 minetest.register_node("was:computer", {
 	description = "Computer",
 	tiles = {
@@ -72,7 +81,7 @@ minetest.register_node("was:computer", {
 	on_waswire=function(pos,channel,from_channel,msg)
 		local meta=minetest.get_meta(pos)
 		local user=meta:get_string("owner")
-		if user~="" and channel==meta:get_string("channel") and from_channel~=meta:get_string("channel") then
+		if user~="" and channel==meta:get_string("channel") then
 			was.compiler(minetest.deserialize(meta:get_string("text")),{
 				type="node",
 				user=user,
@@ -179,7 +188,7 @@ minetest.register_node("was:computer_closed", {
 
 minetest.register_node("was:wire", {
 	description = "was wire",
-	tiles = {{name="was_wire.png"}}, --,color=0xffffffff
+	tiles = {{name="was_wire.png"}},
 	drop="was:wire",
 	drawtype="nodebox",
 	paramtype = "light",

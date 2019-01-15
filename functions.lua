@@ -21,11 +21,11 @@ was.send=function(pos,channel,msg,from_channel)
 	local na=pos.x .."." .. pos.y .."." ..pos.z
 	if not was.wire_signals[na] then
 		was.wire_signals[na]={jobs={[na]=pos},msg=msg,channel=channel,from_channel=from_channel}
-		was.wire_leading()
+		minetest.after(0, function()
+			was.wire_leading()
+		end)
 	end
 end
-
-
 
 was.get_node=function(pos,wire)
 	local n=minetest.get_node(pos).name
