@@ -12,7 +12,7 @@ minetest.register_craft({
 	output = "was:roater_sender",
 	recipe = {
 		{"was:plastic_piece","was:plastic_piece","was:plastic_piece"},
-		{"was:plastic_piece","default:mese","was:plastic_piece"},
+		{"was:plastic_piece","default:mese_crystal","was:plastic_piece"},
 		{"was:plastic_piece","was:wire","was:plastic_piece"},
 	}
 })
