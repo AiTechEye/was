@@ -266,8 +266,8 @@ minetest.register_node("was:touchscreen", {
 	end,
 })
 
-minetest.register_node("was:roater_sender", {
-	description = "Roater sender",
+minetest.register_node("was:router", {
+	description = "Router",
 	tiles = {"was_wire.png"},
 	drawtype="nodebox",
 	paramtype = "light",
