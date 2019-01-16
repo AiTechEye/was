@@ -64,8 +64,6 @@ was.compiler=function(input_text,def)
 		local runs=meta:get_int("runs")+1
 		local sec=was.time("sec",t)
 		meta:set_int("runs",runs)
-print(runs,sec)
-
 
 		if sec<1 and runs>10 then
 			return
