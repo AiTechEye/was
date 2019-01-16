@@ -179,7 +179,10 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 				was.user[name].text=was.gui_addnumbers(was.user[name].text)
 				was.user[name].lines="on"
 				was.userdata.name=name
+				was.userdata.print=true
+				was.userdata.id=was.user[name].id
 				was.functions["print"]({msg})
+				return
 			end
 
 			was.gui(name,msg)
