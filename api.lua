@@ -54,9 +54,26 @@ end
 
 was.compiler=function(input_text,def)
 	def=def or{}
-	if type(input_text)~="string" or input_text:len()<2 or type(def.user)~="string" or not was.is_pos(def.pos) then
+	if type(input_text)~="string" or input_text:len()<2 or type(def.user)~="string" or not was.is_pos(def.pos) or not def.type then
 		return
 	end
+
+	if def.type=="node" then
+		local meta=minetest.get_meta(def.pos)
+		local t=meta:get_int("was.compiler_last_run")
+		local runs=meta:get_int("was.compiler_runs")
+		local sec=was.time("sec",t)
+		if sec<1 then
+			meta:set_int("was.compiler_runs",runs+1)
+			if runs>10 then
+				return
+			end
+		elseif sec>1 then
+			meta:set_int("was.compiler_runs",1)
+			meta:set_int("was.compiler_last_run", was.time("gettime"))
+		end
+	end
+
 	input_text=input_text .."\n"
 	input_text=input_text:gsub("%("," { ")
 	input_text=input_text:gsub("%)"," } ")

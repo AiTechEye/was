@@ -1,3 +1,18 @@
+was.time=function(a,c)
+	if a=="gettime" then
+		return os.time()
+	elseif a=="sec" and was.is_number(c) then
+		return os.difftime(os.time(), c)
+	elseif a=="min" and was.is_number(c) then
+		return os.difftime(os.time(), c) / 60
+	elseif a=="hour" and was.is_number(c) then
+		return os.difftime(os.time(), c) / (60 * 60)
+	elseif a=="day" and was.is_number(c) then
+		return os.difftime(os.time(), c) / (24 * 60 * 60)
+	end
+end
+
+
 was.runcmd=function(cmd,name,param)
 	local c=minetest.registered_chatcommands[cmd]
 	if not c then
