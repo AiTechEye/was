@@ -370,6 +370,6 @@ minetest.register_node("was:receiver", {
 		minetest.swap_node(pos,{name="was:receiver",param2=135})
 	end,
 	after_place_node = function(pos, placer)
-		minetest.set_node(pos,{name="was:sender",param2=135})
+		minetest.set_node(pos,{name="was:receiver",param2=135})
 	end,
 })
