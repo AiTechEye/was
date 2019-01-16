@@ -54,21 +54,21 @@ end
 
 was.compiler=function(input_text,def)
 	def=def or{}
+
 	if type(input_text)~="string" or input_text:len()<2 or type(def.user)~="string" or not was.is_pos(def.pos) or not def.type then
 		return
 	end
-
 	if def.type=="node" then
 		local meta=minetest.get_meta(def.pos)
 		local t=meta:get_int("last_run")
-		local runs=meta:get_int("runs")
-		local sec=was.time("sec",os.time())
+		local runs=meta:get_int("runs")+1
+		local sec=was.time("sec",t)
+		meta:set_int("runs",runs)
+print(runs,sec)
 
-		if sec<1 then
-			meta:set_int("runs",runs+1)
-			if runs>10 then
-				return
-			end
+
+		if sec<1 and runs>10 then
+			return
 		elseif sec>1 then
 			meta:set_int("runs",1)
 			meta:set_int("last_run", was.time("gettime"))
@@ -77,7 +77,6 @@ was.compiler=function(input_text,def)
 		local intensity=meta:get_int("intensity")+1
 		local last_intensity_check=meta:get_int("last_intensity_check")
 		meta:set_int("intensity",intensity)
-
 		if was.time("min",last_intensity_check)>1 then
 			meta:set_int("last_intensity_check",os.time())
 			meta:set_int("intensity",0)
@@ -164,6 +163,8 @@ was.compiler=function(input_text,def)
 	end
 	local output_data2={}
 	local func
+
+
 --print(dump(output_data))
 	local ifends=0
 	local nexts=0
@@ -301,6 +302,7 @@ was.compiler=function(input_text,def)
 		return 'ERROR: Missing ' .. nexts .. ' for "next"'
 	end
 --print(dump(output_data2))
+
 	local msg,def,VAR=was.run(output_data2,def,VAR)
 	def.save=VAR.save
 	was.save(def,true)
