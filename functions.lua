@@ -1,14 +1,16 @@
 was.time=function(a,c)
 	if a=="gettime" then
 		return os.time()
-	elseif a=="sec" and was.is_number(c) then
-		return os.difftime(os.time(), c)
-	elseif a=="min" and was.is_number(c) then
-		return os.difftime(os.time(), c) / 60
-	elseif a=="hour" and was.is_number(c) then
-		return os.difftime(os.time(), c) / (60 * 60)
-	elseif a=="day" and was.is_number(c) then
-		return os.difftime(os.time(), c) / (24 * 60 * 60)
+	else
+		if a=="sec" then
+			return os.difftime(os.time(), c)
+		elseif a=="min" then
+			return os.difftime(os.time(), c) / 60
+		elseif a=="hour" then
+			return os.difftime(os.time(), c) / (60 * 60)
+		elseif a=="day" then
+			return os.difftime(os.time(), c) / (24 * 60 * 60)
+		end
 	end
 end
 
@@ -35,6 +37,17 @@ end
 was.send=function(pos,channel,msg,from_channel)
 	local na=pos.x .."." .. pos.y .."." ..pos.z
 	if not was.wire_signals[na] then
+		local t=os.time()
+		if os.difftime(t, was.wire_sends.last)>1 then
+			was.wire_sends.last=t
+			was.wire_sends.times=0
+		else
+			was.wire_sends.times=was.wire_sends.times+1
+			if was.wire_sends.times>50 then
+				return
+			end
+
+		end
 		was.wire_signals[na]={jobs={[na]=pos},msg=msg,channel=channel,from_channel=from_channel}
 		minetest.after(0, function()
 			was.wire_leading()
@@ -67,7 +80,10 @@ was.wire_leading=function()
 				if not a.jobs[s] and minetest.get_item_group(na,"was_wire")>0 then
 					a.jobs[s]=n
 					c=c+1
-					minetest.set_node(n,{name="was:wire",param2=3})
+					if minetest.registered_nodes[na].on_waswire then
+						minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)
+					end
+					minetest.swap_node(n,{name=na,param2=3})
 					minetest.get_node_timer(n):start(0.1)
 				elseif not a.jobs[s] and minetest.get_item_group(na,"was_unit")>0 and minetest.registered_nodes[na].on_waswire then
 					minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)

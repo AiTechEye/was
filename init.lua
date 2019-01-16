@@ -10,6 +10,7 @@ was={
 	wire_signals={},
 	symbols_characters=".#@=?!&{}%*+-/$<>|~^",
 	wire_rules={{0,0,0},{-1,0,0},{1,0,0},{0,0,-1},{0,0,1},{0,-1,0},{0,1,0}},
+	wire_sends={last=os.time(),times=0},
 }
 
 dofile(minetest.get_modpath("was") .. "/api.lua")

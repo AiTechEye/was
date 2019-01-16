@@ -40,6 +40,7 @@ minetest.register_node("was:computer", {
 		meta:set_string("owner",placer:get_player_name() or "")
 		meta:get_inventory():set_size("storage", 50)
 		meta:set_string("channel", pos.x .." " ..pos.y .." " ..pos.z)
+		meta:set_string("last_intensity_check",os.time())
 		minetest.swap_node(pos,{name="was:computer_closed",param2=minetest.get_node(pos).param2})
 	end,
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
@@ -57,6 +58,7 @@ minetest.register_node("was:computer", {
 				text=minetest.deserialize(meta:get_string("text")),
 				id=pos.x .." " .. pos.y .." " ..pos.z,
 				punchpos=punchpos,
+				gui=true,
 			}
 			was.gui(name)
 		end
@@ -74,7 +76,8 @@ minetest.register_node("was:computer", {
 			type="node",
 			user=meta:get_string("owner"),
 			pos=pos,
-			event={type="timer"}
+			event={type="timer"},
+			print=true,
 		})
 		return true
 	end,
@@ -86,7 +89,8 @@ minetest.register_node("was:computer", {
 				type="node",
 				user=user,
 				pos=pos,
-				event={type="wire",channel=channel,from_channel=from_channel,msg=msg}
+				event={type="wire",channel=channel,from_channel=from_channel,msg=msg},
+				print=true,
 			})
 		end
 	end,
@@ -100,7 +104,8 @@ minetest.register_node("was:computer", {
 					type="node",
 					user=meta:get_string("owner"),
 					pos=pos,
-					event={type="mesecon on"}
+					event={type="mesecon on"},
+					print=true,
 				})
 			end,
 			action_off = function (pos, node)
@@ -110,7 +115,8 @@ minetest.register_node("was:computer", {
 					type="node",
 					user=user,
 					pos=pos,
-					event={type="mesecon off"}
+					event={type="mesecon off"},
+					print=true,
 				})
 			end
 		}
@@ -126,7 +132,8 @@ minetest.register_node("was:computer", {
 						type="node",
 						user=meta:get_string("owner"),
 						pos=pos,
-						event={type="digiline",channel=channel,msg=msg}
+						event={type="digiline",channel=channel,msg=msg},
+						print=true,
 					})
 				end
 			end,
@@ -143,7 +150,8 @@ minetest.register_node("was:computer", {
 					type="node",
 					user=user,
 					pos=pos,
-					event={type="pipeworks",msg={item=n,count=c}}
+					event={type="pipeworks",msg={item=n,count=c}},
+					print=true,
 				})
 			end, text,user,pos,n,c)
 			return meta:get_inventory():add_item("storage", stack)
@@ -273,22 +281,95 @@ minetest.register_node("was:router", {
 	paramtype = "light",
 	paramtype2="facedir",
 	node_box = {
-		type = "fixed",
+		--type = "fixed",
+		type = "connected",
+		connect_back={-0.05,-0.5,0, 0.05,-0.45,0.5},
+		connect_front={-0.05,-0.5,-0.5, 0.05,-0.45,0},
+		connect_left={-0.5,-0.5,-0.05, 0.05,-0.45,0.05},
+		connect_right={0,-0.5,-0.05, 0.5,-0.45,0.05},
+		connect_top = {-0.05, -0.5, -0.05, 0.05, 0.5, 0.05},
 		fixed = {
 			{-0.37, -0.5, -0.25, 0.37, -0.37, 0.25},
 			{-0.37, -0.37, 0.18, -0.31, -0.125, 0.25},
 			{0.31, -0.5, 0.18, 0.37, -0.12, 0.25}
 		}
 	},
+	connects_to={"group:was_wire","group:was_unit"},
 	groups = {oddly_breakable_by_hand = 3,was_unit=1},
 	on_waswire=function(pos,channel,from_channel,msg)
 		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,10),vector.subtract(pos,10),"group:was_unit")) do
-			if not vector.equals(pos,p) then
+			if was.get_node(p)~="was:router" then
 				was.send(p,channel,msg,from_channel)
 			end
 		end
 	end,
 	on_timer = function (pos, elapsed)
 		minetest.swap_node(pos,{name="was:wire",param2=135})
+	end,
+})
+
+minetest.register_node("was:sender", {
+	description = "Wireless sender",
+	tiles = {{name="was_wire.png"}},
+	drop="was:sender",
+	drawtype="nodebox",
+	paramtype = "light",
+	palette="was_palette.png",
+	paramtype2="colorwallmounted",
+	node_box = {
+		type = "connected",
+		connect_back={-0.05,-0.5,0, 0.05,-0.45,0.5},
+		connect_front={-0.05,-0.5,-0.5, 0.05,-0.45,0},
+		connect_left={-0.5,-0.5,-0.05, 0.05,-0.45,0.05},
+		connect_right={0,-0.5,-0.05, 0.5,-0.45,0.05},
+		connect_top = {-0.05, -0.5, -0.05, 0.05, 0.5, 0.05},
+		fixed = {
+			{-0.25, -0.5, -0.25, 0.25, -0.3, 0.25},
+		}
+	},
+	connects_to={"group:was_wire","group:was_unit"},
+	groups = {oddly_breakable_by_hand = 3,was_wire=1},
+	on_waswire=function(pos,channel,from_channel,msg)
+		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,10),vector.subtract(pos,10),"was:receiver")) do
+			was.send(p,channel,msg,from_channel)
+			minetest.swap_node(p,{name="was:receiver",param2=3})
+			minetest.get_node_timer(p):start(0.1)
+		end
+	end,
+	on_timer = function (pos, elapsed)
+		minetest.swap_node(pos,{name="was:sender",param2=135})
+	end,
+	after_place_node = function(pos, placer)
+		minetest.set_node(pos,{name="was:sender",param2=135})
+	end,
+})
+
+minetest.register_node("was:receiver", {
+	description = "Wireless receiver",
+	tiles = {{name="was_wire.png"}},
+	drawtype="nodebox",
+	drop="was:receiver",
+	paramtype = "light",
+	palette="was_palette.png",
+	paramtype2="colorwallmounted",
+	node_box = {
+		type = "connected",
+		connect_back={-0.05,-0.5,0, 0.05,-0.45,0.5},
+		connect_front={-0.05,-0.5,-0.5, 0.05,-0.45,0},
+		connect_left={-0.5,-0.5,-0.05, 0.05,-0.45,0.05},
+		connect_right={0,-0.5,-0.05, 0.5,-0.45,0.05},
+		connect_top = {-0.05, -0.5, -0.05, 0.05, 0.5, 0.05},
+		fixed = {
+			{-0.25, -0.5, -0.25, 0.25, -0.3, 0.25},
+			{-0.02, -0.3, -0.02, 0.02, -0.1, 0.02},
+		}
+	},
+	connects_to={"group:was_wire","group:was_unit"},
+	groups = {oddly_breakable_by_hand = 3,was_wire=1},
+	on_timer = function (pos, elapsed)
+		minetest.swap_node(pos,{name="was:receiver",param2=135})
+	end,
+	after_place_node = function(pos, placer)
+		minetest.set_node(pos,{name="was:sender",param2=135})
 	end,
 })

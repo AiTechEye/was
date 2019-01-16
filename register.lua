@@ -129,6 +129,7 @@ was.register_function("math.pi",{
 	end
 })
 
+
 was.register_function("math",{
 	info="Math + - * ^ /  ('-' 1 2 67...)",
 	packed=true,
@@ -723,7 +724,19 @@ was.register_function("print",{
 					if was.is_string(v) or was.is_number(v) then
 						s=s .. v .. " "
 					elseif was.is_table(v) then
-						s=s .. "table "
+						local t=""
+						for ind,val in pairs(v) do
+							t=t .. ind .."="
+							if was.is_number(val) then
+								t=t .. val .." "
+							elseif was.is_string(val) then
+								t=t .. '"' .. val ..'" '
+							else
+								t=t .. "table "
+							end
+						end
+
+						s=s .. t
 					elseif type(v)=="boolean" then
 						if v==true then
 							s=s .."true "
@@ -748,6 +761,7 @@ was.register_function("print",{
 					ud.console_text=ud.console_text:sub(ud.console_text:find("\n")+1,ud.console_text:len())
 					ud.console_lines=27
 				end
+				was.gui(was.userdata.name)
 			elseif minetest.check_player_privs(was.userdata.name,{server=true}) then
 				print(unpack(a))
 			end
@@ -767,6 +781,15 @@ was.register_function("get.pos",{
 	info="Get position",
 	action=function()
 		return was.userdata.pos
+	end
+})
+
+was.register_function("time",{
+	info='Get/compare time ("type" time_number) type "gettime" to return currently time, or  "sec","min","hour","day" to compare the time ',
+	action=function(a,c)
+		if was.is_string(a) and was.is_number(c) then
+			return was.time(a,c)
+		end
 	end
 })
 

@@ -18,6 +18,25 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
+	output = "was:sender",
+	recipe = {
+		{"was:plastic_piece","was:plastic_piece",""},
+		{"was:plastic_piece","default:mese_crystal",""},
+		{"was:plastic_piece","was:wire",""},
+	}
+})
+
+minetest.register_craft({
+	output = "was:receiver",
+	recipe = {
+		{"was:plastic_piece","was:wire",""},
+		{"was:plastic_piece","default:mese_crystal",""},
+		{"was:plastic_piece","was:plastic_piece",""},
+	}
+})
+
+
+minetest.register_craft({
 	output = "was:computer",
 	recipe = {
 		{"was:plastic_piece","default:mese","was:plastic_piece"},

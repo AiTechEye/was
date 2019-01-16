@@ -76,6 +76,8 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 				was.user[name].text=nil
 				was.user[name].funcs=nil
 				was.user[name].channel=nil
+				was.user[name].id=nil
+				was.user[name].gui=nil
 			end
 			return
 		end
