@@ -46,12 +46,19 @@ was.send=function(pos,channel,msg,from_channel)
 			if was.wire_sends.times>50 then
 				return
 			end
-
 		end
 		was.wire_signals[na]={jobs={[na]=pos},msg=msg,channel=channel,from_channel=from_channel}
 		minetest.after(0, function()
 			was.wire_leading()
 		end)
+	end
+end
+
+was.send_wireless=function(pos,channel,msg,from_channel,radius)
+	for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,radius),vector.subtract(pos,radius),"group:was_unit")) do
+		if minetest.get_item_group(was.get_node(p),"was_resender")==0 and not vector.equals(pos,p) then
+			was.send(p,channel,msg,from_channel)
+		end
 	end
 end
 
@@ -73,22 +80,26 @@ was.wire_leading=function()
 	for i, a in pairs(was.wire_signals) do
 		local c=0
 		for xyz, pos in pairs(a.jobs) do
-			for ii, p in pairs(was.wire_rules) do
-				local n={x=pos.x+p[1],y=pos.y+p[2],z=pos.z+p[3]}
-				local s=n.x .. "." .. n.y .."." ..n.z
-				local na=was.get_node(n)
-				if not a.jobs[s] and minetest.get_item_group(na,"was_wire")>0 then
-					a.jobs[s]=n
-					c=c+1
-					if minetest.registered_nodes[na].on_waswire then
-						minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)
+			if not pos.ignore then
+				for ii, p in pairs(was.wire_rules) do
+					local n={x=pos.x+p[1],y=pos.y+p[2],z=pos.z+p[3]}
+					local s=n.x .. "." .. n.y .."." ..n.z
+					local na=was.get_node(n)
+					if not a.jobs[s] then
+						if minetest.get_item_group(na,"was_wire")>0 then
+							a.jobs[s]=n
+							c=c+1
+							minetest.swap_node(n,{name=na,param2=3})
+							minetest.get_node_timer(n):start(0.1)
+							if minetest.registered_nodes[na].on_waswire then
+								minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)
+							end
+						elseif minetest.get_item_group(na,"was_unit")>0 and minetest.registered_nodes[na].on_waswire then
+							minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)
+							a.jobs[s]={ignore=true}
+							c=c+1
+						end
 					end
-					minetest.swap_node(n,{name=na,param2=3})
-					minetest.get_node_timer(n):start(0.1)
-				elseif not a.jobs[s] and minetest.get_item_group(na,"was_unit")>0 and minetest.registered_nodes[na].on_waswire then
-					minetest.registered_nodes[na].on_waswire(n,a.channel,a.from_channel,a.msg)
-					a.jobs[s]=n
-					c=c+1
 				end
 			end
 		end

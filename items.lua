@@ -197,6 +197,8 @@ minetest.register_node("was:computer_closed", {
 minetest.register_node("was:wire", {
 	description = "was wire",
 	tiles = {{name="was_wire.png"}},
+	inventory_image="was_wire_pre.png",
+	wield_image="was_wire_pre.png",
 	drop="was:wire",
 	drawtype="nodebox",
 	paramtype = "light",
@@ -229,7 +231,7 @@ minetest.register_node("was:wire", {
 })
 
 minetest.register_node("was:touchscreen", {
-	description = "Touchscreen",
+	description = "Touchscreen (wireless)",
 	tiles = {"was_touchscreen.png"},
 	drawtype="nodebox",
 	paramtype = "light",
@@ -250,11 +252,13 @@ minetest.register_node("was:touchscreen", {
 		local meta = minetest.get_meta(pos)
 		local name=player:get_player_name() or ""
 		if meta:get_string("owner")==name and not player:get_player_control().aux1 then
-			local gui="size[2,1.5]field[0,0.3;3,1;channel;Channel;" .. meta:get_string("channel") .."]"
+			local gui="size[2.5,2.5]"
+			.."field[0,0.3;3,1;channel;Channel;" .. meta:get_string("channel") .."]"
 			.."field[0,1.3;3,1;channelto;Send to channel;" .. meta:get_string("channelto") .."]"
+			.."field[0,2.3;3,1;radius;Radius;" .. meta:get_int("radius") .."]"
 			was.user[name]=pos
 			minetest.after(0.1, function(gui,name)
-				return minetest.show_formspec(name, "was.channel+channelto",gui)
+				return minetest.show_formspec(name, "was.channel",gui)
 			end, gui,name)
 		else
 			was.send(pos,meta:get_string("channelto"),name,meta:get_string("channel"))
@@ -281,7 +285,6 @@ minetest.register_node("was:router", {
 	paramtype = "light",
 	paramtype2="facedir",
 	node_box = {
-		--type = "fixed",
 		type = "connected",
 		connect_back={-0.05,-0.5,0, 0.05,-0.45,0.5},
 		connect_front={-0.05,-0.5,-0.5, 0.05,-0.45,0},
@@ -297,14 +300,31 @@ minetest.register_node("was:router", {
 	connects_to={"group:was_wire","group:was_unit"},
 	groups = {oddly_breakable_by_hand = 3,was_unit=1},
 	on_waswire=function(pos,channel,from_channel,msg)
-		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,10),vector.subtract(pos,10),"group:was_unit")) do
-			if was.get_node(p)~="was:router" then
+		local r = minetest.get_meta(pos):get_int("radius")
+		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,r),vector.subtract(pos,r),"group:was_unit")) do
+			local na=was.get_node(p)
+			if na~="was:router" and minetest.get_item_group(na,"was_resender")==0 then
 				was.send(p,channel,msg,from_channel)
 			end
 		end
 	end,
 	on_timer = function (pos, elapsed)
 		minetest.swap_node(pos,{name="was:wire",param2=135})
+	end,
+	after_place_node = function(pos, placer)
+		local meta = minetest.get_meta(pos)
+		meta:set_string("owner",placer:get_player_name() or "")
+	end,
+	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		local meta = minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name then
+			local gui="size[2.5,0.7]field[0,0.5;3,1;radius;Radius;" .. meta:get_int("radius") .."]"
+			was.user[name]=pos
+			minetest.after(0.1, function(gui,name)
+				return minetest.show_formspec(name, "was.channel",gui)
+			end, gui,name)
+		end
 	end,
 })
 
@@ -330,7 +350,8 @@ minetest.register_node("was:sender", {
 	connects_to={"group:was_wire","group:was_unit"},
 	groups = {oddly_breakable_by_hand = 3,was_wire=1},
 	on_waswire=function(pos,channel,from_channel,msg)
-		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,10),vector.subtract(pos,10),"was:receiver")) do
+		local r = minetest.get_meta(pos):get_int("radius")
+		for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,r),vector.subtract(pos,r),"was:receiver")) do
 			was.send(p,channel,msg,from_channel)
 			minetest.swap_node(p,{name="was:receiver",param2=3})
 			minetest.get_node_timer(p):start(0.1)
@@ -341,6 +362,19 @@ minetest.register_node("was:sender", {
 	end,
 	after_place_node = function(pos, placer)
 		minetest.set_node(pos,{name="was:sender",param2=135})
+		local meta = minetest.get_meta(pos)
+		meta:set_string("owner",placer:get_player_name() or "")
+	end,
+	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		local meta = minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name then
+			local gui="size[2.5,0.7]field[0,0.5;3,1;radius;Radius;" .. meta:get_int("radius") .."]"
+			was.user[name]=pos
+			minetest.after(0.1, function(gui,name)
+				return minetest.show_formspec(name, "was.channel",gui)
+			end, gui,name)
+		end
 	end,
 })
 
@@ -371,5 +405,78 @@ minetest.register_node("was:receiver", {
 	end,
 	after_place_node = function(pos, placer)
 		minetest.set_node(pos,{name="was:receiver",param2=135})
+	end,
+})
+
+if minetest.get_modpath("digilines") then
+minetest.register_node("was:digiline_was_converter", {
+	description = "digiline/was converter",
+	tiles = {{name="was_wire.png"}},
+	drop="was:digiline_was_converter",
+	drawtype="nodebox",
+	paramtype = "light",
+	palette="was_palette.png",
+	paramtype2="colorwallmounted",
+	node_box = {
+		type = "connected",
+		connect_back={-0.05,-0.5,0, 0.05,-0.45,0.5},
+		connect_front={-0.05,-0.5,-0.5, 0.05,-0.45,0},
+		connect_left={-0.5,-0.5,-0.05, 0.05,-0.45,0.05},
+		connect_right={0,-0.5,-0.05, 0.5,-0.45,0.05},
+		connect_top = {-0.05, -0.5, -0.05, 0.05, 0.5, 0.05},
+		fixed = {
+			{-0.25, -0.5, -0.25, 0.25, -0.3, 0.25},
+		}
+	},
+	connects_to={"group:was_wire","group:was_unit","group:dig_immediate"},
+	groups = {oddly_breakable_by_hand = 3,was_wire=1},
+	on_timer = function (pos, elapsed)
+		minetest.swap_node(pos,{name="was:digiline_was_converter",param2=135})
+	end,
+	after_place_node = function(pos, placer)
+		minetest.set_node(pos,{name="was:digiline_was_converter",param2=135})
+	end,
+	on_waswire=function(pos,channel,from_channel,msg)
+		digilines.receptor_send(pos,digilines.rules.default,channel,msg)
+	end,
+	digiline = {
+		receptor={},
+		effector = {
+			action = function (pos,node,channel,msg)
+				was.send(pos,channel,msg)
+			end,
+		}
+	},
+})
+end
+
+minetest.register_node("was:mdoid_gate", { --x+ 1 x- 3 z+ 0 z- 2
+	description = "Wire multy doidgate",
+	tiles = {"was_mdoidgate.png","was_wire.png","was_wire.png","was_wire.png","was_wire.png","was_wire.png"},
+	drawtype="nodebox",
+	paramtype = "light",
+	paramtype2="facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5, -0.5, -0.5, 0.5, -0.4, 0.5},
+		}
+	},
+	groups = {oddly_breakable_by_hand = 3,was_unit=1,was_resender=1},
+	on_waswire=function(pos,channel,from_channel,msg)
+		local p=minetest.get_node(pos).param2
+		local np={x=pos.x,y=pos.y,z=pos.z}
+		if p==1 then
+			np.x=np.x+1
+		elseif p==3 then
+			np.x=np.x-1
+		elseif p==0 then
+			np.z=np.z+1
+		elseif p==2 then
+			np.z=np.z-1
+		end
+		if minetest.get_item_group(minetest.get_node(np).name,"was_wire")>0 and not vector.equals(pos,np) then
+			was.send(np,channel,msg,from_channel)
+		end
 	end,
 })

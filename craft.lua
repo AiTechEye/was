@@ -7,7 +7,25 @@ minetest.register_craft({
 	}
 })
 
+minetest.register_craft({
+	output = "was:mdoid_gate",
+	recipe = {
+		{"was:plastic_piece","was:wire","was:plastic_piece"},
+		{"was:plastic_piece","was:wire","was:plastic_piece"},
+		{"","",""},
+	}
+})
 
+minetest.register_craft({
+	output = "was:digiline_was_converter",
+	recipe = {
+		{"digilines:wire_std_00000000","",""},
+		{"was:sender","",""},
+		{"was:wire","",""},
+	}
+})
+
+--[[ currently broken
 minetest.register_craft({
 	output = "was:router",
 	recipe = {
@@ -16,6 +34,7 @@ minetest.register_craft({
 		{"was:plastic_piece","was:wire","was:plastic_piece"},
 	}
 })
+--]]
 
 minetest.register_craft({
 	output = "was:sender",

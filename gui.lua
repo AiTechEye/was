@@ -190,12 +190,6 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 		end
 	elseif form=="was.channel" then
 		local name=user:get_player_name()
-		if was.user[name] and pressed.channel then
-			minetest.get_meta(was.user[name]):set_string("channel",pressed.channel)
-		end
-		was.user[name]=nil
-	elseif form=="was.channel+channelto" then
-		local name=user:get_player_name()
 		if was.user[name] then
 			local m=minetest.get_meta(was.user[name])
 			if pressed.channel==m:get_string("channelto") or pressed.channelto==m:get_string("channel") then
@@ -206,6 +200,17 @@ minetest.register_on_player_receive_fields(function(user, form, pressed)
 			end
 			if pressed.channelto then
 				m:set_string("channelto",pressed.channelto)
+			end
+			if pressed.radius then
+				local nu=tonumber(pressed.radius)
+				if nu then
+					if nu>10 then
+						nu=10
+					elseif nu<0 then
+						nu=0
+					end
+					m:set_int("radius",nu)
+				end
 			end
 		end
 		was.user[name]=nil

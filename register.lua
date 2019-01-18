@@ -272,6 +272,14 @@ was.register_function("pos",{
 	end
 })
 
+was.register_function("epos",{
+	info="Equals/same pos (pos1 pos2)",
+	action=function(p1,p2)
+		if was.is_pos(p1) and was.is_pos(p2) then
+			return vector.equals(p1,p2)
+		end
+	end
+})
 
 --[[
 ================= NODES =================
@@ -808,3 +816,27 @@ was.register_function("was.send",{
 		end	
 	end
 })
+
+--[[
+
+currently broken
+
+was.register_function("was.send_wireless",{
+	info="Send data through wires (string_channel msg radius) max radius is 10",
+	action=function(channel,msg,radius)
+		local p=was.userdata.pos
+		if p and was.is_string(channel) and (not radius or was.is_number(radius)) then
+			radius=radius or 3
+			if radius>10 then radius=10 end
+			local meta = minetest.get_meta(p)
+			local nchannel=meta:get_string("channel")
+			if nchannel==channel then
+				was.userdata.error="can't send to same channel"
+			else
+				was.send(p,channel,msg,nchannel)
+				was.send_wireless(p,channel,msg,nchannel,radius)
+			end
+		end	
+	end
+})
+--]]
