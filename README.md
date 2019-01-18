@@ -8,6 +8,15 @@ in game programing, not in lua
 # dont use this in public servers yet, it need to be practical tested first.
 
 
+#### todo:
+
+- [ ] + game time/function
+- [ ] + get light/function
+- [ ] laptop close/function
+- [ ] return/function
+- [ ] break/function
+- [ ] fix broken wireless sending (just added, but wont work right now)
+- [ ] make sure mod is safe to use on public servers
 ---
 
 
