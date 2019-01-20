@@ -77,6 +77,7 @@ Any reasons to the script on the unit is running will be able in the "event" var
 
 |event	      |type         |channel|from_channel|msg|
 |-------------|-------------|-------|------------|---|
+|run by gui   |"gui_run"    |✖      |✖          |✖
 |timer        |"timer"      |✖      |✖          |✖
 |wire         |"wire"       |✔      |✔          |✔
 |digilines    |"digiline"   |✔      |✖          |✔
