@@ -13,8 +13,8 @@ in game programing, not in lua
 - [x] + game time/function
 - [x] + get light/function
 - [x] laptop close/function
-- [ ] return/function
-- [ ] break/function
+- [x] return/function
+- [x] break/function
 - [ ] fix broken wireless sending (just added, but wont work right now)
 - [ ] make sure mod is safe to use on public servers
 ---
