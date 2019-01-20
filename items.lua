@@ -307,6 +307,7 @@ minetest.register_node("was:router", {
 				was.send(p,channel,msg,from_channel)
 			end
 		end
+		was.send(pos,channel,msg,from_channel)
 	end,
 	on_timer = function (pos, elapsed)
 		minetest.swap_node(pos,{name="was:wire",param2=135})

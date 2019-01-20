@@ -34,7 +34,6 @@ minetest.register_craft({
 	}
 })
 
---[[ currently broken
 minetest.register_craft({
 	output = "was:router",
 	recipe = {
@@ -43,7 +42,6 @@ minetest.register_craft({
 		{"was:plastic_piece","was:wire","was:plastic_piece"},
 	}
 })
---]]
 
 minetest.register_craft({
 	output = "was:sender",

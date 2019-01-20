@@ -56,8 +56,13 @@ end
 
 was.send_wireless=function(pos,channel,msg,from_channel,radius)
 	for _,p in pairs(minetest.find_nodes_in_area(vector.add(pos,radius),vector.subtract(pos,radius),"group:was_unit")) do
-		if minetest.get_item_group(was.get_node(p),"was_resender")==0 and not vector.equals(pos,p) then
-			was.send(p,channel,msg,from_channel)
+		local na=was.get_node(p)
+		if minetest.get_item_group(na,"was_resender")==0 and not vector.equals(pos,p) then
+			if minetest.registered_nodes[na].on_waswire then
+				minetest.registered_nodes[na].on_waswire(p,channel,from_channel,msg)
+			else
+				was.send(p,channel,msg,from_channel)
+			end
 		end
 	end
 end

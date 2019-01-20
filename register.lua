@@ -864,10 +864,6 @@ was.register_function("was.close",{
 	end
 })
 
---[[
-
-currently broken
-
 was.register_function("was.send_wireless",{
 	info="Send data through wires (string_channel msg radius) max radius is 10",
 	action=function(channel,msg,radius)
@@ -880,10 +876,8 @@ was.register_function("was.send_wireless",{
 			if nchannel==channel then
 				was.userdata.error="can't send to same channel"
 			else
-				was.send(p,channel,msg,nchannel)
 				was.send_wireless(p,channel,msg,nchannel,radius)
 			end
 		end	
 	end
 })
---]]
