@@ -83,7 +83,7 @@ Any reasons to the script on the unit is running will be able in the "event" var
 |digilines    |"digiline"   |✔      |✖          |✔
 |msesecons on |"mesecon on" |✖      |✖          |✖
 |meseconns off|"mesecon off"|✖      |✖          |✖
-|pipeworks    |"pipeworks"  |✖      |✖          |{item,count}
+|pipeworks    |"pipeworks"  |✖      |✖          |✔ (item,count)
 </details>
 
 
