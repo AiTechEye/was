@@ -10,9 +10,9 @@ in game programing, not in lua
 
 #### todo:
 
-- [ ] + game time/function
-- [ ] + get light/function
-- [ ] laptop close/function
+- [x] + game time/function
+- [x] + get light/function
+- [x] laptop close/function
 - [ ] return/function
 - [ ] break/function
 - [ ] fix broken wireless sending (just added, but wont work right now)
