@@ -480,3 +480,41 @@ minetest.register_node("was:mdoid_gate", { --x+ 1 x- 3 z+ 0 z- 2
 		end
 	end,
 })
+
+minetest.register_node("was:olgate",{
+	description = "On load gate (activated when loaded)",
+	tiles = {"was_wire.png"},
+	groups = {oddly_breakable_by_hand = 3,was_unit=1,was_lbm=1},
+	on_wasload=function(pos)
+		local meta = minetest.get_meta(pos)
+		was.send(pos,meta:get_string("channelto"),"loaded",meta:get_string("channel"))
+	end,
+	after_place_node = function(pos, placer)
+		local meta = minetest.get_meta(pos)
+		meta:set_string("owner",placer:get_player_name() or "")
+		meta:set_string("channel", pos.x .." " ..pos.y .." " ..pos.z)
+	end,
+	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		local meta = minetest.get_meta(pos)
+		local name=player:get_player_name() or ""
+		if meta:get_string("owner")==name and not player:get_player_control().aux1 then
+			local gui="size[2.5,2]"
+			.."field[0,0.3;3,1;channel;Channel;" .. meta:get_string("channel") .."]"
+			.."field[0,1.3;3,1;channelto;Send to channel;" .. meta:get_string("channelto") .."]"
+			was.user[name]=pos
+			minetest.after(0.1, function(gui,name)
+				return minetest.show_formspec(name, "was.channel",gui)
+			end, gui,name)
+		else
+			was.send(pos,meta:get_string("channelto"),name,meta:get_string("channel"))
+		end
+	end,
+})
+minetest.register_lbm({
+	name="was:lbm",
+	nodenames={"group:was_lbm"},
+	run_at_every_load=true,
+	action=function(pos,node)
+		minetest.registered_nodes[node.name].on_wasload(pos)
+	end
+})

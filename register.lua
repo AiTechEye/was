@@ -127,6 +127,14 @@ was.register_function("math.percent",{
 	end
 })
 
+was.register_function("math.random",{
+	info="random number (num1 num2)",
+	action=function(a,b)
+		if was.is_number(a) and was.is_number(b) and a<b then
+			return math.random(a,b)
+		end
+	end
+})
 
 was.register_function("math.pi",{
 	info="return Pi",

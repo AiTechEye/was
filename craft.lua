@@ -1,4 +1,13 @@
 minetest.register_craft({
+	output = "was:olgate",
+	recipe = {
+		{"was:chemical_lump","was:chemical_lump","was:chemical_lump"},
+		{"group:tree","default:copper_lump","group:tree"},
+		{"group:tree","default:tin_ingot","group:tree"},
+	}
+})
+
+minetest.register_craft({
 	output = "was:chemical_lump 3",
 	recipe = {
 		{"group:dye","group:dye","group:dye"},

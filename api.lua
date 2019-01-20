@@ -239,7 +239,15 @@ was.compiler=function(input_text,def)
 				end
 				nexts=0
 				data[ii].forstate=true
-
+			elseif data[ii].type=="var" and data[ii].content=="break" then
+--break
+				if nexts==0 then
+					return 'ERROR line '.. i ..': no "for" to break'
+				end
+				data[ii].forstate=true
+			elseif data[ii].type=="var" and data[ii].content=="return" then
+--return
+				data[ii].function_return=true
 			elseif data[ii+1] and data[ii+2] and data[ii].type=="var" and data[ii+1].content=="." and (data[ii+2].type=="var" or data[ii+2].type=="number") then
 --table
 				data[ii].table=data[ii+2].content
@@ -424,10 +432,17 @@ was.run=function(input,def,VAR)
 
 			if was.userdata.error then
 				return 'ERROR line '.. index ..': ' .. was.userdata.error,def,VAR
-			elseif v[i].forstate then
-				if v[i].content=="next" then
-
+			elseif state==0 and v[i].function_return then
+				was.userdata={}
+				return "",def,VAR
+			elseif state==0 and v[i].forstate then
+				if forstate and forstate.br and v[i].content=="break" then
+					index=forstate.br
+					forstate=nil
+				elseif v[i].content=="next" then
+					forstate.br=index+1
 					if forstate.i<forstate.e then
+						forstate.br=index
 						index=forstate.re
 						forstate.i=forstate.i+1
 					else
