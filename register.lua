@@ -107,6 +107,12 @@ was.register_function("cmd",{
 	end
 })
 
+was.register_function("get.gametime",{
+	info="Get gametime ()",
+	action=function()
+		return minetest.get_gametime()
+	end
+})
 
 --[[
 ================= DATATYPES = VARIABLES =================
@@ -284,6 +290,24 @@ was.register_function("epos",{
 --[[
 ================= NODES =================
 --]]
+
+was.register_function("node.get_light",{
+	info="Get node light (pos)",
+	action=function(pos)
+		if was.is_pos(pos) then
+			return minetest.get_node_light(pos)
+		end
+	end
+})
+
+was.register_function("node.get_static_light",{
+	info="Get static node light (pos)",
+	action=function(pos)
+		if was.is_pos(pos) then
+			return minetest.get_node_light(pos,0.5)
+		end
+	end
+})
 
 was.register_function("node.set",{
 	info="set node (pos,nodename)",
@@ -813,6 +837,21 @@ was.register_function("was.send",{
 			else
 				was.send(p,channel,msg,nchannel)
 			end
+		end	
+	end
+})
+
+was.register_function("was.close",{
+	info="Close computer ()",
+	action=function()
+		local p=was.userdata.pos
+		if p and was.userdata.type=="node" and minetest.get_node(p).name=="was:computer" then
+			if was.user[was.userdata.name] and was.user[was.userdata.name].gui then
+				minetest.close_formspec(was.userdata.name,"gui")
+				was.user[was.userdata.name]=nil
+			end
+			local n=minetest.get_node(p)
+			minetest.swap_node(p,{name="was:computer_closed",param2=n.param2})
 		end	
 	end
 })

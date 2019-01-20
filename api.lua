@@ -408,6 +408,7 @@ was.run=function(input,def,VAR)
 		id=def.pos.x .." " ..def.pos.y .." " .. def.pos.z,
 		pos=def.pos,
 		print=def.print,
+		type=def.type,
 	}
 
 	local index=0
