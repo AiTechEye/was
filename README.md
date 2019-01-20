@@ -4,19 +4,6 @@ Licenses: code: LGPL-2.1, media: CC BY-SA-4.0
 
 in game programing, not in lua
 
-
-# dont use this in public servers yet, it need to be practical tested first.
-
-
-#### todo:
-
-- [x] + game time/function
-- [x] + get light/function
-- [x] laptop close/function
-- [x] return/function
-- [x] break/function
-- [ ] fix broken wireless sending (just added, but wont work right now)
-- [ ] make sure mod is safe to use on public servers
 ---
 
 
@@ -63,6 +50,7 @@ a = pos(1 2 c)
 dirt="default:dirt"
 node.add(a dirt)
 ```
+you can use "return" to break the currently run
 </details>
 
 
@@ -135,6 +123,7 @@ for(start_n end_n)
  next
  ```
  max loops is 1000, dont use negative values
+use "break" to breat the loop
 </details>
 
 
